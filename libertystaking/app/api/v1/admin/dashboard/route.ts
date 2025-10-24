@@ -1,9 +1,25 @@
 import { NextResponse } from 'next/server';
-import { withAdminAuth } from '@/lib/auth/middleware';
+import { withAuth } from '@/lib/auth/middleware';
 import { queryOne } from '@/lib/db/queries';
 
-export const GET = withAdminAuth(async (request, user) => {
+export const GET = withAuth(async (request, user) => {
   try {
+    // Double-check admin status
+    const isAdmin = user.walletAddress.toLowerCase() === process.env.NEXT_PUBLIC_ADMIN_WALLET?.toLowerCase();
+    
+    if (!isAdmin) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'FORBIDDEN',
+            message: 'Admin access required',
+          },
+        },
+        { status: 403 }
+      );
+    }
+   
     // Get platform stats
     const platformStats = await queryOne<{
       totalUsers: number;

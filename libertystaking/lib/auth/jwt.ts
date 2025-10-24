@@ -42,3 +42,10 @@ export function extractTokenFromHeader(authHeader: string | null): string | null
   }
   return authHeader.substring(7);
 }
+
+/*check Admin status*/
+export function isAdminWallet(walletAddress: string): boolean {
+  const adminWallet = process.env.NEXT_PUBLIC_ADMIN_WALLET?.toLowerCase();
+  return walletAddress.toLowerCase() === adminWallet;
+}
+
