@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { ArrowLeft, User, Mail, Phone, MapPin } from 'lucide-react';
-import { showSuccess, showError } from '@/lib/toast';
+import { showSuccess, showError, showLoading, dismissToast } from '@/lib/toast';
+import { ContractService } from '@/lib/contracts';
 
 export default function SignupPage() {
   const { isAuthenticated } = useAuth();
@@ -63,6 +64,9 @@ export default function SignupPage() {
     setError('');
 
     try {
+      // Step 1: Register user in database
+      const dbToast = showLoading('Creating your account...');
+      
       const response = await fetch('/api/v1/auth/signup', {
         method: 'POST',
         headers: {
@@ -83,28 +87,69 @@ export default function SignupPage() {
       });
 
       const data = await response.json();
+      dismissToast(dbToast);
 
-      if (data.success) {
-        showSuccess(`Welcome to Liberty Finance! Your referral code: ${data.user.customReferralCode}\nReferral link: ${data.user.referralLink}`);
-        
-        // Store auth data
-        localStorage.setItem('liberty_token', data.token);
-        localStorage.setItem('liberty_user', JSON.stringify(data.user));
-        
-        router.push('/dashboard');
-      } else {
+      if (!data.success) {
         setError(data.error?.message || 'Signup failed');
+        showError(data.error?.message || 'Signup failed');
+        setIsLoading(false);
+        return;
       }
-    } catch (error) {
+
+      // Step 2: Set referrer on smart contract (if provided)
+      if (formData.referrerCode && window.ethereum) {
+        const contractToast = showLoading('Setting referrer on blockchain...');
+        
+        try {
+          const contractService = new ContractService(window.ethereum);
+          
+          // Check if referrer already set
+          const existingReferrer = await contractService.getUserReferrer(address);
+          
+          if (existingReferrer === '0x0000000000000000000000000000000000000000') {
+            // Referrer not set, set it now
+            const setRefTx = await contractService.setReferrer(formData.referrerCode);
+            dismissToast(contractToast);
+            
+            const waitToast = showLoading('Waiting for blockchain confirmation...');
+            await setRefTx.wait();
+            dismissToast(waitToast);
+            
+            showSuccess('Referrer set successfully on blockchain! 🎉');
+          } else {
+            dismissToast(contractToast);
+            console.log('✅ Referrer already set:', existingReferrer);
+          }
+        } catch (contractError: any) {
+          dismissToast(contractToast);
+          console.error('Failed to set referrer on contract:', contractError);
+          // Don't fail signup if contract call fails - user can set it later
+          showError('Account created but referrer not set on blockchain. You can set it when staking.');
+        }
+      }
+
+      // Success!
+      showSuccess(`Welcome to Liberty Finance! 🚀\nReferral Code: ${data.user.customReferralCode}`);
+      
+      // Store auth data
+      localStorage.setItem('liberty_token', data.token);
+      localStorage.setItem('liberty_user', JSON.stringify(data.user));
+      
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 2000);
+
+    } catch (error: any) {
       console.error('Signup error:', error);
       setError('Network error. Please try again.');
+      showError('Network error. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -122,6 +167,17 @@ export default function SignupPage() {
           <p className="text-lg text-gray-600">
             Complete your profile to start staking and earning
           </p>
+          
+          {formData.referrerCode && (
+            <div className="mt-4 p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+              <p className="text-sm font-semibold text-green-800">
+                🎁 You're joining with a referral code!
+              </p>
+              <p className="text-xs text-green-600 mt-1 font-mono break-all">
+                {formData.referrerCode}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Wallet Connection */}
@@ -272,7 +328,17 @@ export default function SignupPage() {
               disabled={!isConnected || isLoading}
               className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Creating Account...
+                </span>
+              ) : (
+                'Create Account'
+              )}
             </button>
           </form>
         </div>

@@ -60,6 +60,21 @@ async checkAndTriggerEpochIfNeeded(): Promise<boolean> {
   }
 }
 
+/**
+ * Set Referrer (required before first stake)
+ */
+async setReferrer(referrerAddress: string): Promise<ethers.ContractTransaction> {
+  const contract = this.getStakingContract();
+  return await contract.setReferrer(referrerAddress);
+}
+
+/**
+ * Get user's referrer address
+ */
+async getUserReferrer(userAddress: string): Promise<string> {
+  const contract = this.getStakingContract();
+  return await contract.referrers(userAddress);
+}
 
   /**
    * Get Token Contract Instance
