@@ -1,94 +1,108 @@
-import { NextResponse } from 'next/server';
-import { withAuth } from '@/lib/auth/middleware';
-import { getUserInvestments } from '@/lib/db/investments';
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyToken } from '@/lib/auth/jwt';
+import { query } from '@/lib/db/queries';
 
-export const GET = withAuth(async (request, user) => {
+export async function GET(req: NextRequest) {
   try {
-    console.log('📊 Getting investments for user:', user.userId);
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authorization token' } },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = verifyToken(token);
     
-    const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status') as 'active' | 'completed' | 'all' | null;
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: { code: 'UNAUTHORIZED', message: 'Invalid token' } },
+        { status: 401 }
+      );
+    }
 
-    const { investments, total } = await getUserInvestments(
-      user.userId,
-      status || 'all',
-      page,
-      limit
-    );
+    const userId = decoded.userId;
+    const { searchParams } = new URL(req.url);
+    const status = searchParams.get('status');
 
-    console.log(`✅ Found ${investments.length} investments`);
+    // Build query based on status filter
+    let sql = `
+      SELECT 
+        investment_id as investmentId,
+        order_id as orderId,
+        token_symbol as tokenSymbol,
+        total_amount as totalAmount,
+        order_count as orderCount,
+        amount_per_order as amountPerOrder,
+        locked_apr as lockedApr,
+        locked_maturity_duration as lockedMaturityDuration,
+        stake_timestamp as stakeDate,
+        maturity_timestamp as maturityDate,
+        epoch_id as epochId,
+        paid_order_count as paidOrderCount,
+        fully_paid as fullyPaid,
+        is_reinvestment as isReinvestment,
+        status,
+        stake_tx_hash as txHash,
+        created_at,
+        updated_at
+      FROM investments
+      WHERE user_id = ?
+    `;
 
-    // Add countdown for each investment
-    const investmentsWithCountdown = investments.map((inv) => {
-      const now = Date.now();
-      const maturityTime = new Date(inv.maturity_timestamp).getTime();
-      const remainingMs = Math.max(0, maturityTime - now);
+    const params: any[] = [userId];
+
+    if (status && status !== 'all') {
+      sql += ' AND status = ?';
+      params.push(status);
+    }
+
+    sql += ' ORDER BY created_at DESC';
+
+    const investments = await query(sql, params);
+
+    // Calculate maturity countdown for each investment
+    const now = new Date();
+    const enrichedInvestments = investments.map((inv: any) => {
+      const maturityDate = new Date(inv.maturityDate);
+      const difference = maturityDate.getTime() - now.getTime();
       
-      const totalSeconds = Math.floor(remainingMs / 1000);
-      const days = Math.floor(totalSeconds / 86400);
-      const hours = Math.floor((totalSeconds % 86400) / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
+      const isMatured = difference <= 0;
+      const days = Math.max(0, Math.floor(difference / (1000 * 60 * 60 * 24)));
+      const hours = Math.max(0, Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+      const minutes = Math.max(0, Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)));
+      const seconds = Math.max(0, Math.floor((difference % (1000 * 60)) / 1000));
 
-      const totalAmount = parseFloat(inv.total_amount);
-      const apr = inv.locked_apr / 100;
-      const expectedInterest = (totalAmount * apr) / 100;
-      const expectedPayout = totalAmount + expectedInterest;
+      const remainingOrders = inv.orderCount - inv.paidOrderCount;
+      const expectedInterest = (parseFloat(inv.totalAmount) * (inv.lockedApr / 10000) * (inv.lockedMaturityDuration / 31536000)).toFixed(2);
+      const expectedPayout = (parseFloat(inv.totalAmount) + parseFloat(expectedInterest)).toFixed(2);
 
       return {
-        investmentId: inv.investment_id,
-        orderId: inv.order_id,
-        tokenSymbol: inv.token_symbol,
-        totalAmount: inv.total_amount,
-        orderCount: inv.order_count,
-        amountPerOrder: inv.amount_per_order,
-        lockedApr: apr,
-        stakeDate: inv.stake_timestamp,
-        maturityDate: inv.maturity_timestamp,
+        ...inv,
+        lockedApr: inv.lockedApr / 100, // Convert basis points to percentage
         maturityCountdown: {
           days,
           hours,
           minutes,
           seconds,
-          totalSeconds,
-          isMatured: totalSeconds === 0,
+          isMatured,
         },
-        status: inv.status,
-        paidOrderCount: inv.paid_order_count,
-        remainingOrders: inv.order_count - inv.paid_order_count,
-        expectedInterest: expectedInterest.toFixed(2),
-        expectedPayout: expectedPayout.toFixed(2),
-        fullyPaid: inv.fully_paid,
-        txHash: inv.stake_tx_hash,
-        lastPayoutTxHash: inv.last_payout_tx_hash,
+        remainingOrders,
+        expectedInterest,
+        expectedPayout,
       };
     });
 
-    const totalPages = Math.ceil(total / limit);
-
     return NextResponse.json({
       success: true,
-      investments: investmentsWithCountdown,
-      pagination: {
-        currentPage: page,
-        totalPages,
-        totalItems: total,
-        itemsPerPage: limit,
-      },
+      investments: enrichedInvestments,
     });
-  } catch (error) {
-    console.error('❌ Get investments error:', error);
+  } catch (error: any) {
+    console.error('Failed to fetch investments:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'SERVER_ERROR',
-          message: 'Failed to fetch investments',
-        },
-      },
+      { success: false, error: { code: 'INTERNAL_ERROR', message: error.message } },
       { status: 500 }
     );
   }
-});
+}

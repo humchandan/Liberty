@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { ArrowLeft, User, Mail, Phone, MapPin } from 'lucide-react';
+import { showSuccess, showError } from '@/lib/toast';
 
 export default function SignupPage() {
   const { isAuthenticated } = useAuth();
@@ -84,7 +85,7 @@ export default function SignupPage() {
       const data = await response.json();
 
       if (data.success) {
-        alert(`Success! Welcome to Liberty Finance!\n\nYour referral code: ${data.user.customReferralCode}\nReferral link: ${data.user.referralLink}`);
+        showSuccess(`Welcome to Liberty Finance! Your referral code: ${data.user.customReferralCode}\nReferral link: ${data.user.referralLink}`);
         
         // Store auth data
         localStorage.setItem('liberty_token', data.token);

@@ -8,7 +8,8 @@ import {
   Users, 
   User, 
   Settings,
-  Shield
+  Shield,
+  DollarSign
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 
@@ -19,17 +20,11 @@ const menuItems = [
   { href: '/dashboard/profile', icon: User, label: 'Profile' },
 ];
 
-const adminMenuItem = { 
-  href: '/dashboard/admin', 
-  icon: Shield, 
-  label: 'Admin Panel' 
-};
-
 export function Sidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
   
-  // Check if user is admin (you can store this in user object)
+  // Check if user is admin
   const isAdmin = user?.walletAddress?.toLowerCase() === process.env.NEXT_PUBLIC_ADMIN_WALLET?.toLowerCase();
 
   return (
@@ -54,22 +49,50 @@ export function Sidebar() {
             </Link>
           );
         })}
+
+        {/* Claim Rewards Link - Only show if user has referrals */}
+        <Link
+          href="/dashboard/referrals/claim"
+          className={`flex items-center gap-3 px-4 py-3 ml-4 rounded-lg transition-colors ${
+            pathname === '/dashboard/referrals/claim'
+              ? 'bg-green-50 text-green-600'
+              : 'text-gray-700 hover:bg-gray-100'
+          }`}
+        >
+          <DollarSign size={20} />
+          <span className="font-medium">Claim Rewards</span>
+        </Link>
         
+        {/* Admin Section */}
         {isAdmin && (
           <>
-            <div className="border-t my-2 pt-2">
-              <Link
-                href={adminMenuItem.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  pathname === adminMenuItem.href
-                    ? 'bg-red-50 text-red-600 font-medium'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <adminMenuItem.icon size={20} />
-                {adminMenuItem.label}
-              </Link>
+            <div className="pt-4 mt-4 border-t">
+              <p className="text-xs font-semibold text-gray-400 uppercase px-4 mb-2">Admin</p>
             </div>
+            
+            <Link
+              href="/dashboard/admin"
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                pathname === '/dashboard/admin'
+                  ? 'bg-red-50 text-red-600'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <Shield size={20} />
+              <span className="font-medium">Admin Panel</span>
+            </Link>
+            
+            <Link
+              href="/dashboard/admin/controls"
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                pathname === '/dashboard/admin/controls'
+                  ? 'bg-red-50 text-red-600'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <Settings size={20} />
+              <span className="font-medium">Admin Controls</span>
+            </Link>
           </>
         )}
       </nav>
