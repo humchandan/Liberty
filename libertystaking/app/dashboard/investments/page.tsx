@@ -8,7 +8,7 @@ import Link from 'next/link';
 
 interface Investment {
   investmentId: number;
-  orderId: number;
+  orderId: number | null;
   tokenSymbol: string;
   totalAmount: string;
   orderCount: number;
@@ -30,6 +30,66 @@ interface Investment {
   expectedPayout: string;
   fullyPaid: boolean;
   txHash: string;
+}
+
+// ✅ Countdown Timer Component (with seconds!)
+function CountdownTimer({ maturityDate }: { maturityDate: string }) {
+  const [timeRemaining, setTimeRemaining] = useState({ 
+    days: 0, 
+    hours: 0, 
+    minutes: 0, 
+    seconds: 0 
+  });
+
+  useEffect(() => {
+    const targetDate = new Date(maturityDate);
+    
+    const updateCountdown = () => {
+      const now = new Date();
+      const difference = targetDate.getTime() - now.getTime();
+
+      if (difference <= 0) {
+        setTimeRemaining({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
+
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+      setTimeRemaining({ days, hours, minutes, seconds });
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(interval);
+  }, [maturityDate]);
+
+  return (
+    <div className="flex gap-4">
+      <div className="text-center">
+        <div className="text-3xl font-bold text-gray-900">{timeRemaining.days}</div>
+        <div className="text-xs text-gray-600 uppercase tracking-wide">Days</div>
+      </div>
+      <div className="text-3xl font-bold text-gray-400">:</div>
+      <div className="text-center">
+        <div className="text-3xl font-bold text-gray-900">{timeRemaining.hours}</div>
+        <div className="text-xs text-gray-600 uppercase tracking-wide">Hours</div>
+      </div>
+      <div className="text-3xl font-bold text-gray-400">:</div>
+      <div className="text-center">
+        <div className="text-3xl font-bold text-gray-900">{timeRemaining.minutes}</div>
+        <div className="text-xs text-gray-600 uppercase tracking-wide">Minutes</div>
+      </div>
+      <div className="text-3xl font-bold text-gray-400">:</div>
+      <div className="text-center">
+        <div className="text-3xl font-bold text-blue-600">{timeRemaining.seconds}</div>
+        <div className="text-xs text-blue-600 uppercase tracking-wide font-semibold">Seconds</div>
+      </div>
+    </div>
+  );
 }
 
 export default function InvestmentsPage() {
@@ -101,14 +161,13 @@ export default function InvestmentsPage() {
         <div className="bg-white rounded-lg border p-12 text-center">
           <TrendingUp className="mx-auto text-gray-400 mb-4" size={48} />
           <h3 className="text-xl font-bold text-gray-900 mb-2">No Investments Yet</h3>
-          <p className="text-gray-600 mb-6">Start staking INRT tokens to earn rewards</p>
+          <p className="text-gray-600 mb-6">Start staking tokens to earn rewards</p>
           <Link
-  href="/dashboard/investments/create"
-  className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
->
-  Create Investment
-</Link>
-
+            href="/dashboard/investments/create"
+            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+          >
+            Create Investment
+          </Link>
         </div>
       ) : (
         <div className="space-y-4">
@@ -121,18 +180,22 @@ export default function InvestmentsPage() {
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-xl font-bold">
-                      {investment.totalAmount} {investment.tokenSymbol}
+                      {parseFloat(investment.totalAmount).toFixed(2)} {investment.tokenSymbol}
                     </h3>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(investment.status)}`}>
                       {investment.status}
                     </span>
                   </div>
-                  <p className="text-gray-600">Order #{investment.orderId}</p>
+                  <p className="text-gray-600">
+                    {investment.orderId ? `Order #${investment.orderId}` : 'Processing...'}
+                  </p>
                 </div>
                 
                 <div className="text-right">
                   <p className="text-2xl font-bold text-green-600">{investment.lockedApr}% APR</p>
-                  <p className="text-sm text-gray-600">Expected: {investment.expectedPayout} INRT</p>
+                  <p className="text-sm text-gray-600">
+                    Expected: {parseFloat(investment.expectedPayout).toFixed(2)} {investment.tokenSymbol}
+                  </p>
                 </div>
               </div>
 
@@ -158,27 +221,24 @@ export default function InvestmentsPage() {
                 
                 <div>
                   <p className="text-sm text-gray-600">Per Order</p>
-                  <p className="font-medium">{investment.amountPerOrder} INRT</p>
+                  <p className="font-medium">
+                    {parseFloat(investment.amountPerOrder).toFixed(2)} {investment.tokenSymbol}
+                  </p>
                 </div>
               </div>
 
               {!investment.maturityCountdown.isMatured && (
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-2">Time to Maturity:</p>
-                  <div className="flex gap-4 text-center">
-                    <div>
-                      <p className="text-2xl font-bold text-blue-600">{investment.maturityCountdown.days}</p>
-                      <p className="text-xs text-gray-600">Days</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-blue-600">{investment.maturityCountdown.hours}</p>
-                      <p className="text-xs text-gray-600">Hours</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-blue-600">{investment.maturityCountdown.minutes}</p>
-                      <p className="text-xs text-gray-600">Minutes</p>
-                    </div>
-                  </div>
+                <div className="mb-4 bg-gray-50 rounded-lg p-4">
+                  <h3 className="text-sm text-gray-600 mb-3 font-medium">Time to Maturity</h3>
+                  <CountdownTimer maturityDate={investment.maturityDate} />
+                </div>
+              )}
+
+              {investment.maturityCountdown.isMatured && (
+                <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="text-green-800 font-medium">
+                    ✅ Investment Matured! Ready for withdrawal
+                  </p>
                 </div>
               )}
 
@@ -194,6 +254,19 @@ export default function InvestmentsPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Create New Investment Button (Fixed Position) */}
+      {investments.length > 0 && (
+        <div className="fixed bottom-8 right-8">
+          <Link
+            href="/dashboard/investments/create"
+            className="flex items-center gap-2 px-6 py-4 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all"
+          >
+            <DollarSign size={20} />
+            <span className="font-medium">New Investment</span>
+          </Link>
         </div>
       )}
     </DashboardLayout>
