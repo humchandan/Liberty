@@ -42,3 +42,9 @@ export async function closePool(): Promise<void> {
     console.log('✅ MySQL connection pool closed');
   }
 }
+
+export async function query(sql: string, params?: any[]): Promise<any[]> {
+  const pool = getPool();
+  const [results] = await pool.execute(sql, params);
+  return results as any[];
+}

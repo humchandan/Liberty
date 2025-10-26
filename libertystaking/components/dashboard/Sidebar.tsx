@@ -12,7 +12,8 @@ import {
   Wallet,
   Bell,
   Settings,
-  X
+  X,
+  Activity
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 
@@ -37,6 +38,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const adminNavItems = [
     { href: '/dashboard/admin', label: 'Admin Dashboard', icon: Shield },
+    { href: '/dashboard/admin/analytics', label: 'Analytics', icon: Activity }, 
     { href: '/dashboard/admin/controls', label: 'Admin Controls', icon: Settings },
     { href: '/dashboard/admin/treasury', label: 'Treasury', icon: Wallet },
     { href: '/dashboard/admin/payouts', label: 'Process Payouts', icon: DollarSign },
