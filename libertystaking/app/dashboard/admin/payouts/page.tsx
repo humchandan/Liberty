@@ -20,6 +20,7 @@ interface MaturedOrder {
   paidOrderCount: number;
   maturityDate: string;
   status: string;
+  fullName: string;
 }
 
 export default function AdminPayoutsPage() {
@@ -40,7 +41,7 @@ export default function AdminPayoutsPage() {
       return;
     }
     fetchMaturedOrders();
-  }, [isAdmin]);
+  }, [isAdmin, token]);
 
   const fetchMaturedOrders = async () => {
     setRefreshing(true);
@@ -51,6 +52,8 @@ export default function AdminPayoutsPage() {
       const data = await res.json();
       if (data.success) {
         setMaturedOrders(data.orders);
+      } else {
+        showError(data.error?.message || 'Failed to load orders');
       }
     } catch (error) {
       console.error('Failed to fetch matured orders:', error);
@@ -93,6 +96,8 @@ export default function AdminPayoutsPage() {
     return null;
   }
 
+  const totalPendingAmount = maturedOrders.reduce((sum, order) => sum + parseFloat(order.totalAmount), 0);
+
   return (
     <DashboardLayout>
       <div className="mb-8 flex justify-between items-center">
@@ -128,18 +133,18 @@ export default function AdminPayoutsPage() {
             <DollarSign size={24} />
           </div>
           <p className="text-4xl font-bold">
-            {maturedOrders.reduce((sum, order) => sum + parseFloat(order.totalAmount), 0).toFixed(2)}
+            {totalPendingAmount.toFixed(2)}
           </p>
           <p className="text-sm opacity-90 mt-1">INRT to be paid</p>
         </div>
 
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-6 text-white">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm opacity-90">Processed Today</h3>
+            <h3 className="text-sm opacity-90">Processing</h3>
             <CheckCircle size={24} />
           </div>
-          <p className="text-4xl font-bold">0</p>
-          <p className="text-sm opacity-90 mt-1">Orders paid</p>
+          <p className="text-4xl font-bold">{processingOrderId ? '1' : '0'}</p>
+          <p className="text-sm opacity-90 mt-1">Currently processing</p>
         </div>
       </div>
 
@@ -149,7 +154,12 @@ export default function AdminPayoutsPage() {
           <h2 className="text-xl font-bold">Matured Orders Awaiting Payout</h2>
         </div>
         
-        {maturedOrders.length === 0 ? (
+        {refreshing ? (
+          <div className="p-12 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading orders...</p>
+          </div>
+        ) : maturedOrders.length === 0 ? (
           <div className="p-12 text-center">
             <CheckCircle className="mx-auto text-green-500 mb-4" size={48} />
             <h3 className="text-xl font-bold text-gray-900 mb-2">All Caught Up!</h3>
@@ -158,24 +168,25 @@ export default function AdminPayoutsPage() {
         ) : (
           <div className="divide-y">
             {maturedOrders.map((order) => (
-              <div key={order.investmentId} className="p-6 hover:bg-gray-50">
+              <div key={order.investmentId} className="p-6 hover:bg-gray-50 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-3 mb-3">
                       <h3 className="text-lg font-bold">Order #{order.orderId}</h3>
                       <span className="px-3 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">
                         Matured
                       </span>
                     </div>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
                       <div>
                         <p className="text-gray-600">User</p>
-                        <p className="font-medium font-mono">{order.walletAddress.slice(0, 10)}...</p>
+                        <p className="font-medium">{order.fullName}</p>
+                        <p className="font-mono text-xs text-gray-500">{order.walletAddress.slice(0, 10)}...</p>
                       </div>
                       <div>
                         <p className="text-gray-600">Amount</p>
-                        <p className="font-bold text-green-600">{order.totalAmount} {order.tokenSymbol}</p>
+                        <p className="font-bold text-green-600">{parseFloat(order.totalAmount).toFixed(2)} {order.tokenSymbol}</p>
                       </div>
                       <div>
                         <p className="text-gray-600">Orders Paid</p>
@@ -185,13 +196,19 @@ export default function AdminPayoutsPage() {
                         <p className="text-gray-600">Matured On</p>
                         <p className="font-medium">{new Date(order.maturityDate).toLocaleDateString()}</p>
                       </div>
+                      <div>
+                        <p className="text-gray-600">Days Overdue</p>
+                        <p className="font-medium text-red-600">
+                          {Math.floor((Date.now() - new Date(order.maturityDate).getTime()) / (1000 * 60 * 60 * 24))} days
+                        </p>
+                      </div>
                     </div>
                   </div>
 
                   <button
                     onClick={() => handlePayOrder(order.orderId)}
                     disabled={processingOrderId === order.orderId}
-                    className="ml-6 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50"
+                    className="ml-6 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {processingOrderId === order.orderId ? (
                       <span className="flex items-center gap-2">

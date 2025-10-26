@@ -2,6 +2,7 @@
 
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
+import { AnnouncementBanner } from '@/components/AnnouncementBanner';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -43,6 +44,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+      {/* ✅ Add Announcement Banner */}
+      <AnnouncementBanner />
     </div>
   );
 }

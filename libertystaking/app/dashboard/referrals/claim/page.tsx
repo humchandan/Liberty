@@ -7,6 +7,7 @@ import { useAccount } from 'wagmi';
 import { ContractService } from '@/lib/contracts';
 import { showSuccess, showError, showLoading, dismissToast } from '@/lib/toast';
 import { DollarSign, Users, TrendingUp, Copy, Share2, RefreshCw } from 'lucide-react';
+import { SocialShare } from '@/components/social-share';
 
 interface ReferralStats {
   level1Count: number;
@@ -250,45 +251,33 @@ Join now: ${referralLink}`;
 
       {/* Share Referral Link */}
       <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg p-6 text-white">
-        <h2 className="text-2xl font-bold mb-4">Share Your Referral Link</h2>
-        <p className="mb-6 opacity-90">Invite friends and earn commission on their stakes!</p>
-        
-        <div className="bg-white/10 backdrop-blur rounded-lg p-4 mb-4">
-          <p className="text-sm opacity-90 mb-2">Your Referral Link:</p>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={`${window.location.origin}/signup?ref=${address}`}
-              readOnly
-              className="flex-1 px-4 py-2 bg-white/20 rounded-lg text-white font-mono text-sm"
-            />
-            <button
-              onClick={handleCopyReferralLink}
-              className="px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-gray-100 font-medium"
-            >
-              <Copy size={20} />
-            </button>
-          </div>
-        </div>
+  <h2 className="text-2xl font-bold mb-4">Share Your Referral Link</h2>
+  <p className="mb-6 opacity-90">Invite friends and earn commission on their stakes!</p>
+  
+  <div className="bg-white/10 backdrop-blur rounded-lg p-4 mb-4">
+    <p className="text-sm opacity-90 mb-2">Your Referral Link:</p>
+    <div className="flex gap-2">
+      <input
+        type="text"
+        value={`${window.location.origin}/signup?ref=${address}`}
+        readOnly
+        className="flex-1 px-4 py-2 bg-white/20 rounded-lg text-white font-mono text-sm"
+      />
+      <button
+        onClick={handleCopyReferralLink}
+        className="px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-gray-100 font-medium"
+      >
+        <Copy size={20} />
+      </button>
+    </div>
+  </div>
 
-        <div className="flex gap-4">
-          <button
-            onClick={handleWhatsAppShare}
-            className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium flex items-center justify-center gap-2"
-          >
-            <Share2 size={20} />
-            Share on WhatsApp
-          </button>
-          
-          <button
-            onClick={handleCopyReferralLink}
-            className="flex-1 px-6 py-3 bg-white text-blue-600 rounded-lg hover:bg-gray-100 font-medium flex items-center justify-center gap-2"
-          >
-            <Copy size={20} />
-            Copy Link
-          </button>
-        </div>
-      </div>
+  <SocialShare
+    url={`${window.location.origin}/signup?ref=${address}`}
+    title="🚀 Join Liberty Finance - Earn High APR!"
+    description={`I'm earning upto 80% APR by staking crypto. Join using my referral link and we both benefit!`}
+  />
+</div>
 
       {/* Level 1 Referrals List */}
       {stats.level1Refs.length > 0 && (

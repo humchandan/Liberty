@@ -2,10 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
 import { query } from '@/lib/db/queries';
 
-export async function GET(req: NextRequest) {
+export async function PATCH(
+  req: NextRequest,
+  context: { params: any }) {
+  const paramsObj = context.params && typeof context.params.then === "function"
+    ? await context.params
+    : context.params;
+  const id = paramsObj?.id;
+
+  if (!id) {
+    console.error('Announcement TOGGLE endpoint: id is missing or undefined', paramsObj);
+    return NextResponse.json(
+      { success: false, error: { code: 'BAD_REQUEST', message: 'Missing announcement ID' } },
+      { status: 400 }
+    );
+  }
+
   try {
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authorization token' } },
         { status: 401 }
@@ -22,7 +37,6 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Check if user is admin
     const adminWallet = process.env.NEXT_PUBLIC_ADMIN_WALLET?.toLowerCase();
     const userRes = await query('SELECT wallet_address FROM users WHERE user_id = ?', [decoded.userId]);
     
@@ -33,41 +47,17 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Get matured orders that haven't been fully paid
-    const sql = `
-      SELECT 
-        i.investment_id as investmentId,
-        i.order_id as orderId,
-        i.user_id as userId,
-        u.wallet_address as walletAddress,
-        u.full_name as fullName,
-        i.token_symbol as tokenSymbol,
-        i.total_amount as totalAmount,
-        i.order_count as orderCount,
-        i.paid_order_count as paidOrderCount,
-        i.maturity_timestamp as maturityDate,
-        i.status
-      FROM investments i
-      JOIN users u ON i.user_id = u.user_id
-      WHERE i.maturity_timestamp <= NOW()
-        AND i.fully_paid = FALSE
-        AND i.status = 'active'
-        AND i.order_id IS NOT NULL
-      ORDER BY i.maturity_timestamp ASC
-    `;
+    const body = await req.json();
+    const { isActive } = body;
 
-    const orders = await query(sql);
+    await query('UPDATE announcements SET is_active = ? WHERE announcement_id = ?', [isActive ? 1 : 0, id]);
 
-    return NextResponse.json({
-      success: true,
-      orders,
-    });
+    return NextResponse.json({ success: true, message: 'Status updated successfully' });
   } catch (error: any) {
-    console.error('Failed to fetch matured orders:', error);
+    console.error('Toggle error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'INTERNAL_ERROR', message: error.message } },
       { status: 500 }
     );
   }
 }
-
