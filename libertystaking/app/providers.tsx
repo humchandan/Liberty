@@ -13,13 +13,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        // Disable automatic refetching
         refetchOnWindowFocus: false,
       },
     },
   }));
 
-  // Suppress WalletConnect warnings in development
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
       const originalWarn = console.warn;
@@ -44,6 +42,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
                 style: {
                   background: '#363636',
                   color: '#fff',
+                  fontSize: '14px',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  maxWidth: '90vw',
                 },
                 success: {
                   duration: 3000,
@@ -59,6 +61,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
                     secondary: '#fff',
                   },
                 },
+              }}
+              containerStyle={{
+                top: '1rem',
+                right: '1rem',
+                bottom: '1rem',
+                left: '1rem',
               }}
             />
             {children}

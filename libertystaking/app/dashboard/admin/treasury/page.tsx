@@ -63,17 +63,17 @@ export default function TreasuryPage() {
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <div className="flex justify-between items-center">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Treasury Management</h1>
-            <p className="text-gray-600">Monitor and manage platform treasury</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Treasury Management</h1>
+            <p className="text-sm sm:text-base text-gray-600">Monitor and manage platform treasury</p>
           </div>
           
           <button
             onClick={fetchTreasuryData}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm w-full sm:w-auto justify-center"
           >
             <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
             Refresh
@@ -81,49 +81,49 @@ export default function TreasuryPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-linear-to-br from-green-600 to-green-700 rounded-lg p-6 text-white">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div className="bg-linear-to-br from-green-600 to-green-700 rounded-lg p-4 sm:p-6 text-white">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium opacity-90">Treasury Balance</h3>
-            <Wallet size={24} />
+            <h3 className="text-xs sm:text-sm font-medium opacity-90">Treasury Balance</h3>
+            <Wallet size={20} className="sm:w-6 sm:h-6" />
           </div>
-          <p className="text-4xl font-bold">{parseFloat(treasuryData.balance).toFixed(2)}</p>
-          <p className="text-sm opacity-90 mt-1">INRT</p>
+          <p className="text-3xl sm:text-4xl font-bold">{parseFloat(treasuryData.balance).toFixed(2)}</p>
+          <p className="text-xs sm:text-sm opacity-90 mt-1">INRT</p>
         </div>
 
-        <div className="bg-linear-to-br from-blue-600 to-blue-700 rounded-lg p-6 text-white">
+        <div className="bg-linear-to-br from-blue-600 to-blue-700 rounded-lg p-4 sm:p-6 text-white">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium opacity-90">Total Staked</h3>
-            <TrendingUp size={24} />
+            <h3 className="text-xs sm:text-sm font-medium opacity-90">Total Staked</h3>
+            <TrendingUp size={20} className="sm:w-6 sm:h-6" />
           </div>
-          <p className="text-4xl font-bold">{parseFloat(treasuryData.totalStaked).toFixed(2)}</p>
-          <p className="text-sm opacity-90 mt-1">INRT</p>
+          <p className="text-3xl sm:text-4xl font-bold">{parseFloat(treasuryData.totalStaked).toFixed(2)}</p>
+          <p className="text-xs sm:text-sm opacity-90 mt-1">INRT</p>
         </div>
 
-        <div className="bg-linear-to-br from-purple-600 to-purple-700 rounded-lg p-6 text-white">
+        <div className="bg-linear-to-br from-purple-600 to-purple-700 rounded-lg p-4 sm:p-6 text-white">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium opacity-90">Total Paid</h3>
-            <DollarSign size={24} />
+            <h3 className="text-xs sm:text-sm font-medium opacity-90">Total Paid</h3>
+            <DollarSign size={20} className="sm:w-6 sm:h-6" />
           </div>
-          <p className="text-4xl font-bold">{parseFloat(treasuryData.totalPaid).toFixed(2)}</p>
-          <p className="text-sm opacity-90 mt-1">INRT</p>
+          <p className="text-3xl sm:text-4xl font-bold">{parseFloat(treasuryData.totalPaid).toFixed(2)}</p>
+          <p className="text-xs sm:text-sm opacity-90 mt-1">INRT</p>
         </div>
 
-        <div className="bg-linear-to-br from-orange-600 to-orange-700 rounded-lg p-6 text-white">
+        <div className="bg-linear-to-br from-orange-600 to-orange-700 rounded-lg p-4 sm:p-6 text-white">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium opacity-90">Pending Payouts</h3>
-            <Package size={24} />
+            <h3 className="text-xs sm:text-sm font-medium opacity-90">Pending Payouts</h3>
+            <Package size={20} className="sm:w-6 sm:h-6" />
           </div>
-          <p className="text-4xl font-bold">{treasuryData.pendingPayouts}</p>
-          <p className="text-sm opacity-90 mt-1">Orders</p>
+          <p className="text-3xl sm:text-4xl font-bold">{treasuryData.pendingPayouts}</p>
+          <p className="text-xs sm:text-sm opacity-90 mt-1">Orders</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border p-6">
-        <h2 className="text-xl font-bold mb-4">Treasury Actions</h2>
+      <div className="bg-white rounded-lg border p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold mb-4">Treasury Actions</h2>
         
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <p className="text-sm text-yellow-800">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4">
+          <p className="text-xs sm:text-sm text-yellow-800">
             ⚠️ Treasury management functions are view-only. Contract funds are managed by smart contract logic.
           </p>
         </div>

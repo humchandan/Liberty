@@ -161,16 +161,16 @@ export default function AnnouncementsPage() {
 
   return (
     <DashboardLayout>
-      <div className="mb-8 flex justify-between items-center">
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Announcements</h1>
-          <p className="text-gray-600">Create and manage banner announcements</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Manage Announcements</h1>
+          <p className="text-sm sm:text-base text-gray-600">Create and manage banner announcements</p>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex flex-col xs:flex-row gap-2">
           <button
             onClick={fetchAnnouncements}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+            className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm"
           >
             <RefreshCw size={16} />
             Refresh
@@ -181,7 +181,7 @@ export default function AnnouncementsPage() {
               setEditingId(null);
               setFormData({ title: '', message: '', imageUrl: '', priority: 0, expiresAt: '' });
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
           >
             <Plus size={16} />
             New Announcement
@@ -191,68 +191,68 @@ export default function AnnouncementsPage() {
 
       {/* Form */}
       {showForm && (
-        <div className="bg-white rounded-lg border p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4">{editingId ? 'Edit' : 'Create'} Announcement</h2>
+        <div className="bg-white rounded-lg border p-4 sm:p-6 mb-6 sm:mb-8">
+          <h2 className="text-lg sm:text-xl font-bold mb-4">{editingId ? 'Edit' : 'Create'} Announcement</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Title *</label>
+              <label className="block text-xs sm:text-sm font-medium mb-2">Title *</label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg"
+                className="w-full px-3 sm:px-4 py-2 border rounded-lg text-sm sm:text-base"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Message *</label>
+              <label className="block text-xs sm:text-sm font-medium mb-2">Message *</label>
               <textarea
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg h-32"
+                className="w-full px-3 sm:px-4 py-2 border rounded-lg h-24 sm:h-32 text-sm sm:text-base"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Image URL</label>
+              <label className="block text-xs sm:text-sm font-medium mb-2">Image URL</label>
               <input
                 type="url"
                 value={formData.imageUrl}
                 onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg"
+                className="w-full px-3 sm:px-4 py-2 border rounded-lg text-sm sm:text-base"
                 placeholder="https://example.com/image.jpg"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Priority</label>
+                <label className="block text-xs sm:text-sm font-medium mb-2">Priority</label>
                 <input
                   type="number"
                   value={formData.priority}
                   onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })}
-                  className="w-full px-4 py-2 border rounded-lg"
+                  className="w-full px-3 sm:px-4 py-2 border rounded-lg text-sm sm:text-base"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Expires At (Optional)</label>
+                <label className="block text-xs sm:text-sm font-medium mb-2">Expires At (Optional)</label>
                 <input
                   type="datetime-local"
                   value={formData.expiresAt}
                   onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg"
+                  className="w-full px-3 sm:px-4 py-2 border rounded-lg text-sm sm:text-base"
                 />
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col xs:flex-row gap-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm sm:text-base"
               >
                 {loading ? 'Saving...' : 'Save'}
               </button>
@@ -262,7 +262,7 @@ export default function AnnouncementsPage() {
                   setShowForm(false);
                   setEditingId(null);
                 }}
-                className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                className="px-4 sm:px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 text-sm sm:text-base"
               >
                 Cancel
               </button>
@@ -274,48 +274,51 @@ export default function AnnouncementsPage() {
       {/* List */}
       <div className="space-y-4">
         {announcements.map((announcement) => (
-          <div key={announcement.announcementId} className="bg-white rounded-lg border p-6">
-            <div className="flex items-start justify-between">
+          <div key={announcement.announcementId} className="bg-white rounded-lg border p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-lg font-bold">{announcement.title}</h3>
-                  <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                  <h3 className="text-base sm:text-lg font-bold">{announcement.title}</h3>
+                  <span className={`px-2 sm:px-3 py-1 text-[10px] sm:text-xs font-medium rounded-full ${
                     announcement.isActive 
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-gray-100 text-gray-800'
                   }`}>
                     {announcement.isActive ? 'Active' : 'Inactive'}
                   </span>
-                  <span className="text-sm text-gray-500">Priority: {announcement.priority}</span>
+                  <span className="text-xs sm:text-sm text-gray-500">Priority: {announcement.priority}</span>
                 </div>
-                <p className="text-gray-700 mb-2">{announcement.message}</p>
+                <p className="text-sm sm:text-base text-gray-700 mb-2">{announcement.message}</p>
                 {announcement.imageUrl && (
-                  <img src={announcement.imageUrl} alt="" className="w-32 h-20 object-cover rounded mt-2" />
+                  <img src={announcement.imageUrl} alt="" className="w-24 sm:w-32 h-16 sm:h-20 object-cover rounded mt-2" />
                 )}
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-[10px] sm:text-xs text-gray-500 mt-2">
                   Created: {new Date(announcement.createdAt).toLocaleString()}
                   {announcement.expiresAt && ` • Expires: ${new Date(announcement.expiresAt).toLocaleString()}`}
                 </p>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex sm:flex-col gap-2">
                 <button
                   onClick={() => handleToggleActive(announcement.announcementId, announcement.isActive)}
                   className="p-2 hover:bg-gray-100 rounded"
+                  title={announcement.isActive ? 'Deactivate' : 'Activate'}
                 >
-                  {announcement.isActive ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {announcement.isActive ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
                 <button
                   onClick={() => handleEdit(announcement)}
                   className="p-2 hover:bg-gray-100 rounded"
+                  title="Edit"
                 >
-                  <Edit size={20} />
+                  <Edit size={18} />
                 </button>
                 <button
                   onClick={() => handleDelete(announcement.announcementId)}
                   className="p-2 hover:bg-red-50 text-red-600 rounded"
+                  title="Delete"
                 >
-                  <Trash2 size={20} />
+                  <Trash2 size={18} />
                 </button>
               </div>
             </div>

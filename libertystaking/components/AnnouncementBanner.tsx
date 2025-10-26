@@ -26,7 +26,6 @@ export function AnnouncementBanner() {
       const data = await res.json();
       
       if (data.success && data.announcement) {
-        // Check if user already dismissed this announcement
         const dismissedId = localStorage.getItem('dismissedAnnouncement');
         if (dismissedId !== String(data.announcement.announcementId)) {
           setAnnouncement(data.announcement);
@@ -50,13 +49,13 @@ export function AnnouncementBanner() {
 
   return (
     <div
-      className={`fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 transition-opacity duration-300 ${
+      className={`fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3 sm:p-4 transition-opacity duration-300 ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       onClick={handleDismiss}
     >
       <div
-        className={`bg-white rounded-2xl max-w-2xl w-full shadow-2xl transform transition-all duration-300 ${
+        className={`bg-white rounded-xl sm:rounded-2xl max-w-2xl w-full shadow-2xl transform transition-all duration-300 max-h-[90vh] overflow-y-auto ${
           isVisible ? 'scale-100' : 'scale-95'
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -64,14 +63,14 @@ export function AnnouncementBanner() {
         {/* Close Button */}
         <button
           onClick={handleDismiss}
-          className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors z-10"
+          className="absolute top-2 right-2 sm:top-4 sm:right-4 p-1.5 sm:p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors z-10"
         >
-          <X size={20} className="text-gray-600" />
+          <X size={18} className="sm:w-5 sm:h-5 text-gray-600" />
         </button>
 
         {/* Image */}
         {announcement.imageUrl && (
-          <div className="w-full h-48 overflow-hidden rounded-t-2xl">
+          <div className="w-full h-32 xs:h-40 sm:h-48 overflow-hidden rounded-t-xl sm:rounded-t-2xl">
             <img
               src={announcement.imageUrl}
               alt={announcement.title}
@@ -81,17 +80,17 @@ export function AnnouncementBanner() {
         )}
 
         {/* Content */}
-        <div className="p-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+        <div className="p-4 xs:p-6 sm:p-8">
+          <h2 className="text-xl xs:text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4 pr-6">
             {announcement.title}
           </h2>
-          <p className="text-lg text-gray-700 leading-relaxed mb-6">
+          <p className="text-sm xs:text-base sm:text-lg text-gray-700 leading-relaxed mb-4 sm:mb-6">
             {announcement.message}
           </p>
 
           <button
             onClick={handleDismiss}
-            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+            className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors text-sm sm:text-base"
           >
             Got it!
           </button>

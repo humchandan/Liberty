@@ -87,70 +87,70 @@ export default function ReferralsPage() {
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Referral Program</h1>
-        <p className="text-gray-600">Earn up to 15% commission on 15 levels</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Referral Program</h1>
+        <p className="text-sm sm:text-base text-gray-600">Earn up to 15% commission on 15 levels</p>
       </div>
 
       {/* Referral Link Card */}
-      <div className="bg-linear-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white mb-6">
+      <div className="bg-linear-to-r from-blue-600 to-purple-600 rounded-lg p-4 sm:p-6 text-white mb-4 sm:mb-6">
         <div className="flex items-center gap-2 mb-3">
-          <LinkIcon size={24} />
-          <h2 className="text-xl font-bold">Your Referral Link</h2>
+          <LinkIcon size={20} className="sm:w-6 sm:h-6" />
+          <h2 className="text-lg sm:text-xl font-bold">Your Referral Link</h2>
         </div>
-        <div className="bg-white/20 rounded-lg p-4 flex items-center justify-between gap-4">
-          <code className="text-sm break-all">
+        <div className="bg-white/20 rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+          <code className="text-xs sm:text-sm break-all w-full sm:w-auto">
             {process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/signup?ref={user?.customReferralCode}
           </code>
           <button
             onClick={copyReferralLink}
-            className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-gray-100 font-medium whitespace-nowrap"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-gray-100 font-medium whitespace-nowrap text-sm w-full sm:w-auto justify-center"
           >
-            {copied ? <CheckCircle size={20} /> : <Copy size={20} />}
+            {copied ? <CheckCircle size={18} /> : <Copy size={18} />}
             {copied ? 'Copied!' : 'Copy'}
           </button>
         </div>
-        <p className="text-sm mt-3 opacity-90">
+        <p className="text-xs sm:text-sm mt-3 opacity-90">
           Share this link with friends and earn commission on their investments!
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white rounded-lg border p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-medium text-gray-600">Total Team</h3>
-            <Users className="text-blue-600" size={24} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
+        <div className="bg-white rounded-lg border p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h3 className="font-medium text-gray-600 text-sm sm:text-base">Total Team</h3>
+            <Users className="text-blue-600" size={20} />
           </div>
-          <p className="text-3xl font-bold">{stats?.totalTeamSize || 0}</p>
-          <p className="text-sm text-gray-600 mt-2">
+          <p className="text-2xl sm:text-3xl font-bold">{stats?.totalTeamSize || 0}</p>
+          <p className="text-xs sm:text-sm text-gray-600 mt-2">
             Active: {stats?.activeMembers || 0} | Inactive: {stats?.inactiveMembers || 0}
           </p>
         </div>
 
-        <div className="bg-white rounded-lg border p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-medium text-gray-600">Total Earned</h3>
-            <DollarSign className="text-green-600" size={24} />
+        <div className="bg-white rounded-lg border p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h3 className="font-medium text-gray-600 text-sm sm:text-base">Total Earned</h3>
+            <DollarSign className="text-green-600" size={20} />
           </div>
-          <p className="text-3xl font-bold">{parseFloat(stats?.earnings.totalEarned || '0').toFixed(2)} INRT</p>
-          <p className="text-sm text-gray-600 mt-2">
+          <p className="text-2xl sm:text-3xl font-bold">{parseFloat(stats?.earnings.totalEarned || '0').toFixed(2)} INRT</p>
+          <p className="text-xs sm:text-sm text-gray-600 mt-2">
             Claimed: {parseFloat(stats?.earnings.totalClaimed || '0').toFixed(2)} INRT
           </p>
         </div>
 
-        <div className="bg-white rounded-lg border p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-medium text-gray-600">Pending Claims</h3>
-            <DollarSign className="text-orange-600" size={24} />
+        <div className="bg-white rounded-lg border p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h3 className="font-medium text-gray-600 text-sm sm:text-base">Pending Claims</h3>
+            <DollarSign className="text-orange-600" size={20} />
           </div>
-          <p className="text-3xl font-bold">{parseFloat(stats?.earnings.pendingClaims || '0').toFixed(2)} INRT</p>
+          <p className="text-2xl sm:text-3xl font-bold">{parseFloat(stats?.earnings.pendingClaims || '0').toFixed(2)} INRT</p>
           {stats?.earnings.canClaim ? (
-            <button className="mt-3 w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
+            <button className="mt-2 sm:mt-3 w-full px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm">
               Claim Now
             </button>
           ) : (
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-xs sm:text-sm text-gray-600 mt-2">
               Min. {stats?.earnings.minClaimAmount} INRT required
             </p>
           )}
@@ -158,53 +158,53 @@ export default function ReferralsPage() {
       </div>
 
       {/* Level Breakdown */}
-      <div className="bg-white rounded-lg border p-6 mb-6">
-        <h2 className="text-xl font-bold mb-4">Team by Level</h2>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <p className="text-2xl font-bold text-blue-600">{stats?.level1Count || 0}</p>
-            <p className="text-sm text-gray-600">Level 1</p>
+      <div className="bg-white rounded-lg border p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Team by Level</h2>
+        <div className="grid grid-cols-3 gap-3 sm:gap-4">
+          <div className="text-center p-3 sm:p-4 bg-blue-50 rounded-lg">
+            <p className="text-xl sm:text-2xl font-bold text-blue-600">{stats?.level1Count || 0}</p>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">Level 1</p>
           </div>
-          <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <p className="text-2xl font-bold text-purple-600">{stats?.level2Count || 0}</p>
-            <p className="text-sm text-gray-600">Level 2</p>
+          <div className="text-center p-3 sm:p-4 bg-purple-50 rounded-lg">
+            <p className="text-xl sm:text-2xl font-bold text-purple-600">{stats?.level2Count || 0}</p>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">Level 2</p>
           </div>
-          <div className="text-center p-4 bg-pink-50 rounded-lg">
-            <p className="text-2xl font-bold text-pink-600">{stats?.level3Count || 0}</p>
-            <p className="text-sm text-gray-600">Level 3</p>
+          <div className="text-center p-3 sm:p-4 bg-pink-50 rounded-lg">
+            <p className="text-xl sm:text-2xl font-bold text-pink-600">{stats?.level3Count || 0}</p>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">Level 3</p>
           </div>
         </div>
       </div>
 
       {/* Recent Earnings */}
-      <div className="bg-white rounded-lg border p-6">
-        <h2 className="text-xl font-bold mb-4">Recent Earnings</h2>
+      <div className="bg-white rounded-lg border p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Recent Earnings</h2>
         
         {loading ? (
           <div className="flex items-center justify-center h-32">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
           </div>
         ) : earnings.length === 0 ? (
-          <p className="text-gray-600 text-center py-8">No earnings yet. Start referring!</p>
+          <p className="text-gray-600 text-center py-8 text-sm sm:text-base">No earnings yet. Start referring!</p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {earnings.map((earning) => (
               <div
                 key={earning.earningId}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                className="flex flex-col xs:flex-row items-start xs:items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg gap-2 xs:gap-0"
               >
-                <div>
-                  <p className="font-medium">Level {earning.level} Commission</p>
-                  <p className="text-sm text-gray-600">
+                <div className="w-full xs:w-auto">
+                  <p className="font-medium text-sm sm:text-base">Level {earning.level} Commission</p>
+                  <p className="text-xs sm:text-sm text-gray-600 font-mono">
                     From: {earning.refereeWallet.slice(0, 6)}...{earning.refereeWallet.slice(-4)}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-[10px] xs:text-xs text-gray-500">
                     {new Date(earning.earnedAt).toLocaleString()}
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-green-600">+{earning.amount} INRT</p>
-                  <p className="text-sm text-gray-600">{earning.percentage}%</p>
+                <div className="text-left xs:text-right w-full xs:w-auto">
+                  <p className="text-base sm:text-lg font-bold text-green-600">+{earning.amount} INRT</p>
+                  <p className="text-xs sm:text-sm text-gray-600">{earning.percentage}%</p>
                   {earning.claimed && (
                     <span className="text-xs text-green-600">✓ Claimed</span>
                   )}
