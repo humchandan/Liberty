@@ -29,11 +29,9 @@ export default function AdminControlsPage() {
   const [currentCommission, setCurrentCommission] = useState<number>(0);
   const [isPaused, setIsPaused] = useState<boolean>(false);
   
-  // ✅ Admin fee state
   const [adminFees, setAdminFees] = useState('0');
   const [adminType, setAdminType] = useState<'primary' | 'secondary' | null>(null);
   
-  // Form states
   const [newAPR, setNewAPR] = useState<string>('');
   const [newMaturity, setNewMaturity] = useState<string>('');
   const [newCommission, setNewCommission] = useState<string>('');
@@ -63,15 +61,15 @@ export default function AdminControlsPage() {
         stakingContract.currentMaturityDuration(),
         stakingContract.adminCommissionPercentage(),
         stakingContract.stakingPaused(),
-        contractService.getAdminFeesForConnectedWallet(address), // ✅ Auto-detect admin type
+        contractService.getAdminFeesForConnectedWallet(address),
       ]);
       
       setCurrentAPR(apr.toNumber() / 100);
       setCurrentMaturity(maturity.toNumber());
       setCurrentCommission(commission.toNumber() / 100);
       setIsPaused(paused);
-      setAdminFees(adminInfo.availableFees); // ✅ Set admin fees
-      setAdminType(adminInfo.adminType); // ✅ Set admin type
+      setAdminFees(adminInfo.availableFees);
+      setAdminType(adminInfo.adminType);
       
       console.log('🔑 Admin Type:', adminInfo.adminType);
       console.log('💰 Available Fees:', adminInfo.availableFees);
@@ -80,7 +78,6 @@ export default function AdminControlsPage() {
     }
   };
 
-  // ✅ NEW: Handle admin fee claim
   const handleClaimAdminFees = async () => {
     if (!window.ethereum || !address) {
       showError('Please connect your wallet');
@@ -102,7 +99,7 @@ export default function AdminControlsPage() {
 
     try {
       const contractService = new ContractService(window.ethereum);
-      const tx = await contractService.claimAdminFeesAuto(address); // ✅ Auto-claim
+      const tx = await contractService.claimAdminFeesAuto(address);
       dismissToast(loadingToast);
       
       const waitToast = showLoading('Waiting for confirmation...');
@@ -276,73 +273,75 @@ export default function AdminControlsPage() {
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Controls</h1>
-        <p className="text-gray-600">Manage platform settings and smart contract parameters</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Admin Controls</h1>
+        <p className="text-sm sm:text-base text-gray-600">Manage platform settings and smart contract parameters</p>
       </div>
 
       {/* Current Settings Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg border p-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+        <div className="bg-white rounded-lg border p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm text-gray-600">Current APR</h3>
-            <TrendingUp className="text-blue-600" size={20} />
+            <h3 className="text-xs sm:text-sm text-gray-600">Current APR</h3>
+            <TrendingUp className="text-blue-600" size={16} />
           </div>
-          <p className="text-3xl font-bold">{currentAPR}%</p>
+          <p className="text-2xl sm:text-3xl font-bold">{currentAPR}%</p>
         </div>
 
-        <div className="bg-white rounded-lg border p-6">
+        <div className="bg-white rounded-lg border p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm text-gray-600">Maturity Duration</h3>
-            <Clock className="text-purple-600" size={20} />
+            <h3 className="text-xs sm:text-sm text-gray-600">Maturity Duration</h3>
+            <Clock className="text-purple-600" size={16} />
           </div>
-          <p className="text-3xl font-bold">{Math.floor(currentMaturity / 86400)}</p>
-          <p className="text-xs text-gray-600">days</p>
+          <p className="text-2xl sm:text-3xl font-bold">{Math.floor(currentMaturity / 86400)}</p>
+          <p className="text-[10px] sm:text-xs text-gray-600">days</p>
         </div>
 
-        <div className="bg-white rounded-lg border p-6">
+        <div className="bg-white rounded-lg border p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm text-gray-600">Admin Commission</h3>
-            <DollarSign className="text-green-600" size={20} />
+            <h3 className="text-xs sm:text-sm text-gray-600">Admin Commission</h3>
+            <DollarSign className="text-green-600" size={16} />
           </div>
-          <p className="text-3xl font-bold">{currentCommission}%</p>
+          <p className="text-2xl sm:text-3xl font-bold">{currentCommission}%</p>
         </div>
 
-        <div className="bg-white rounded-lg border p-6">
+        <div className="bg-white rounded-lg border p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm text-gray-600">Staking Status</h3>
-            {isPaused ? <Pause className="text-red-600" size={20} /> : <Play className="text-green-600" size={20} />}
+            <h3 className="text-xs sm:text-sm text-gray-600">Staking Status</h3>
+            {isPaused ? <Pause className="text-red-600" size={16} /> : <Play className="text-green-600" size={16} />}
           </div>
-          <p className="text-2xl font-bold">{isPaused ? 'Paused' : 'Active'}</p>
+          <p className="text-lg sm:text-2xl font-bold">{isPaused ? 'Paused' : 'Active'}</p>
         </div>
       </div>
 
       {/* Control Panels */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* ✅ ADMIN FEE CLAIM SECTION - ADDED AT TOP */}
-        <div className="bg-white rounded-lg border p-6 lg:col-span-2">
-          <div className="flex items-center gap-2 mb-4">
-            <DollarSign className="text-green-600" size={24} />
-            <h2 className="text-xl font-bold">Claim Admin Fees</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {/* Admin Fee Claim Section */}
+        <div className="bg-white rounded-lg border p-4 sm:p-6 lg:col-span-2">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-4">
+            <div className="flex items-center gap-2">
+              <DollarSign className="text-green-600" size={20} />
+              <h2 className="text-lg sm:text-xl font-bold">Claim Admin Fees</h2>
+            </div>
             {adminType && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+              <span className="px-2 sm:px-3 py-1 bg-blue-100 text-blue-800 text-xs sm:text-sm font-medium rounded-full w-fit">
                 {adminType.charAt(0).toUpperCase() + adminType.slice(1)} Admin
               </span>
             )}
           </div>
           
           <div className="space-y-4">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
                 <div>
-                  <p className="text-sm text-green-700 mb-1">Available to Claim</p>
-                  <p className="text-3xl font-bold text-green-600">
+                  <p className="text-xs sm:text-sm text-green-700 mb-1">Available to Claim</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-green-600">
                     {parseFloat(adminFees).toFixed(2)} INRT
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-green-700 mb-1">Your Role</p>
-                  <p className="text-lg font-bold text-green-600">
+                  <p className="text-xs sm:text-sm text-green-700 mb-1">Your Role</p>
+                  <p className="text-base sm:text-lg font-bold text-green-600">
                     {adminType ? `${adminType.charAt(0).toUpperCase() + adminType.slice(1)} Admin` : 'Not Admin'}
                   </p>
                 </div>
@@ -351,11 +350,11 @@ export default function AdminControlsPage() {
               <button
                 onClick={handleClaimAdminFees}
                 disabled={loading || parseFloat(adminFees) === 0 || !adminType}
-                className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
@@ -366,7 +365,7 @@ export default function AdminControlsPage() {
                 )}
               </button>
               
-              <p className="text-xs text-green-700 mt-2">
+              <p className="text-[10px] sm:text-xs text-green-700 mt-2">
                 💡 {adminType === 'primary' ? 'Primary admin receives 50% of platform fees' : adminType === 'secondary' ? 'Secondary admin receives 50% of platform fees' : 'Platform admin fees split between two admins'}
               </p>
             </div>
@@ -374,14 +373,14 @@ export default function AdminControlsPage() {
         </div>
 
         {/* Update APR */}
-        <div className="bg-white rounded-lg border p-6">
+        <div className="bg-white rounded-lg border p-4 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="text-blue-600" size={24} />
-            <h2 className="text-xl font-bold">Update APR</h2>
+            <TrendingUp className="text-blue-600" size={20} />
+            <h2 className="text-lg sm:text-xl font-bold">Update APR</h2>
           </div>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                 New APR (%)
               </label>
               <input
@@ -390,13 +389,13 @@ export default function AdminControlsPage() {
                 onChange={(e) => setNewAPR(e.target.value)}
                 placeholder="e.g., 12"
                 disabled={loading}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-sm sm:text-base"
               />
             </div>
             <button
               onClick={handleUpdateAPR}
               disabled={loading || !newAPR}
-              className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50"
+              className="w-full px-4 py-2.5 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50 text-sm sm:text-base"
             >
               Update APR
             </button>
@@ -404,16 +403,16 @@ export default function AdminControlsPage() {
         </div>
 
         {/* Trigger New Epoch */}
-        <div className="bg-white rounded-lg border p-6">
+        <div className="bg-white rounded-lg border p-4 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
-            <RefreshCw className="text-green-600" size={24} />
-            <h2 className="text-xl font-bold">Trigger New Epoch</h2>
+            <RefreshCw className="text-green-600" size={20} />
+            <h2 className="text-lg sm:text-xl font-bold">Trigger New Epoch</h2>
           </div>
           <div className="space-y-4">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4">
               <div className="flex gap-2">
-                <AlertCircle className="text-yellow-600 shrink-0" size={20} />
-                <p className="text-sm text-yellow-800">
+                <AlertCircle className="text-yellow-600 shrink-0" size={18} />
+                <p className="text-xs sm:text-sm text-yellow-800">
                   This will start a new epoch and reset available orders. Use this manually if auto-trigger fails.
                 </p>
               </div>
@@ -421,7 +420,7 @@ export default function AdminControlsPage() {
             <button
               onClick={handleTriggerNewEpoch}
               disabled={loading}
-              className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50"
+              className="w-full px-4 py-2.5 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50 text-sm sm:text-base"
             >
               Trigger New Epoch
             </button>
@@ -429,14 +428,14 @@ export default function AdminControlsPage() {
         </div>
 
         {/* Update Maturity Duration */}
-        <div className="bg-white rounded-lg border p-6">
+        <div className="bg-white rounded-lg border p-4 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Clock className="text-purple-600" size={24} />
-            <h2 className="text-xl font-bold">Update Maturity Duration</h2>
+            <Clock className="text-purple-600" size={20} />
+            <h2 className="text-lg sm:text-xl font-bold">Update Maturity Duration</h2>
           </div>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                 New Duration (days)
               </label>
               <input
@@ -445,13 +444,13 @@ export default function AdminControlsPage() {
                 onChange={(e) => setNewMaturity(e.target.value)}
                 placeholder="e.g., 180"
                 disabled={loading}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
+                className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 disabled:opacity-50 text-sm sm:text-base"
               />
             </div>
             <button
               onClick={handleUpdateMaturity}
               disabled={loading || !newMaturity}
-              className="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium disabled:opacity-50"
+              className="w-full px-4 py-2.5 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium disabled:opacity-50 text-sm sm:text-base"
             >
               Update Duration
             </button>
@@ -459,14 +458,14 @@ export default function AdminControlsPage() {
         </div>
 
         {/* Update Admin Commission */}
-        <div className="bg-white rounded-lg border p-6">
+        <div className="bg-white rounded-lg border p-4 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
-            <DollarSign className="text-orange-600" size={24} />
-            <h2 className="text-xl font-bold">Update Admin Commission</h2>
+            <DollarSign className="text-orange-600" size={20} />
+            <h2 className="text-lg sm:text-xl font-bold">Update Admin Commission</h2>
           </div>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                 New Commission (%)
               </label>
               <input
@@ -475,13 +474,13 @@ export default function AdminControlsPage() {
                 onChange={(e) => setNewCommission(e.target.value)}
                 placeholder="e.g., 5"
                 disabled={loading}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 disabled:opacity-50"
+                className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 disabled:opacity-50 text-sm sm:text-base"
               />
             </div>
             <button
               onClick={handleUpdateCommission}
               disabled={loading || !newCommission}
-              className="w-full px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium disabled:opacity-50"
+              className="w-full px-4 py-2.5 sm:py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium disabled:opacity-50 text-sm sm:text-base"
             >
               Update Commission
             </button>
@@ -489,16 +488,16 @@ export default function AdminControlsPage() {
         </div>
 
         {/* Pause/Unpause Staking */}
-        <div className="bg-white rounded-lg border p-6 lg:col-span-2">
+        <div className="bg-white rounded-lg border p-4 sm:p-6 lg:col-span-2">
           <div className="flex items-center gap-2 mb-4">
-            {isPaused ? <Play className="text-green-600" size={24} /> : <Pause className="text-red-600" size={24} />}
-            <h2 className="text-xl font-bold">Emergency Controls</h2>
+            {isPaused ? <Play className="text-green-600" size={20} /> : <Pause className="text-red-600" size={20} />}
+            <h2 className="text-lg sm:text-xl font-bold">Emergency Controls</h2>
           </div>
           <div className="space-y-4">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4">
               <div className="flex gap-2">
-                <AlertCircle className="text-red-600 shrink-0" size={20} />
-                <p className="text-sm text-red-800">
+                <AlertCircle className="text-red-600 shrink-0" size={18} />
+                <p className="text-xs sm:text-sm text-red-800">
                   {isPaused 
                     ? 'Staking is currently PAUSED. Users cannot create new stakes.' 
                     : 'Staking is currently ACTIVE. Click below to pause all new stakes.'}
@@ -508,7 +507,7 @@ export default function AdminControlsPage() {
             <button
               onClick={handleTogglePause}
               disabled={loading}
-              className={`w-full px-4 py-3 text-white rounded-lg font-medium disabled:opacity-50 ${
+              className={`w-full px-4 py-2.5 sm:py-3 text-white rounded-lg font-medium disabled:opacity-50 text-sm sm:text-base ${
                 isPaused 
                   ? 'bg-green-600 hover:bg-green-700' 
                   : 'bg-red-600 hover:bg-red-700'

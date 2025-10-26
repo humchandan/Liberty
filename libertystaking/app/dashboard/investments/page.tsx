@@ -32,7 +32,7 @@ interface Investment {
   txHash: string;
 }
 
-// ✅ Countdown Timer Component (with seconds!)
+// ✅ Countdown Timer Component (Ultra Mobile Responsive)
 function CountdownTimer({ maturityDate }: { maturityDate: string }) {
   const [timeRemaining, setTimeRemaining] = useState({ 
     days: 0, 
@@ -68,29 +68,30 @@ function CountdownTimer({ maturityDate }: { maturityDate: string }) {
   }, [maturityDate]);
 
   return (
-    <div className="flex gap-4">
-      <div className="text-center">
-        <div className="text-3xl font-bold text-gray-900">{timeRemaining.days}</div>
-        <div className="text-xs text-gray-600 uppercase tracking-wide">Days</div>
+    <div className="flex gap-1.5 xs:gap-2 sm:gap-4 justify-center items-center text-center overflow-x-auto">
+      <div className="flex flex-col items-center min-w-10 xs:min-w-[3rem] sm:min-w-16">
+        <div className="text-base xs:text-xl sm:text-3xl font-bold text-gray-900 leading-tight">{timeRemaining.days}</div>
+        <div className="text-[8px] xs:text-[10px] sm:text-xs text-gray-600 uppercase mt-0.5">DAYS</div>
       </div>
-      <div className="text-3xl font-bold text-gray-400">:</div>
-      <div className="text-center">
-        <div className="text-3xl font-bold text-gray-900">{timeRemaining.hours}</div>
-        <div className="text-xs text-gray-600 uppercase tracking-wide">Hours</div>
+      <div className="text-base xs:text-xl sm:text-3xl font-bold text-gray-400 leading-none">:</div>
+      <div className="flex flex-col items-center min-w-10 xs:min-w-[3rem] sm:min-w-16">
+        <div className="text-base xs:text-xl sm:text-3xl font-bold text-gray-900 leading-tight">{timeRemaining.hours}</div>
+        <div className="text-[8px] xs:text-[10px] sm:text-xs text-gray-600 uppercase mt-0.5">HOURS</div>
       </div>
-      <div className="text-3xl font-bold text-gray-400">:</div>
-      <div className="text-center">
-        <div className="text-3xl font-bold text-gray-900">{timeRemaining.minutes}</div>
-        <div className="text-xs text-gray-600 uppercase tracking-wide">Minutes</div>
+      <div className="text-base xs:text-xl sm:text-3xl font-bold text-gray-400 leading-none">:</div>
+      <div className="flex flex-col items-center min-w-10 xs:min-w-[3rem] sm:min-w-16">
+        <div className="text-base xs:text-xl sm:text-3xl font-bold text-gray-900 leading-tight">{timeRemaining.minutes}</div>
+        <div className="text-[8px] xs:text-[10px] sm:text-xs text-gray-600 uppercase mt-0.5">MINS</div>
       </div>
-      <div className="text-3xl font-bold text-gray-400">:</div>
-      <div className="text-center">
-        <div className="text-3xl font-bold text-blue-600">{timeRemaining.seconds}</div>
-        <div className="text-xs text-blue-600 uppercase tracking-wide font-semibold">Seconds</div>
+      <div className="text-base xs:text-xl sm:text-3xl font-bold text-gray-400 leading-none">:</div>
+      <div className="flex flex-col items-center min-w-10 xs:min-w-[3rem] sm:min-w-16">
+        <div className="text-base xs:text-xl sm:text-3xl font-bold text-blue-600 leading-tight">{timeRemaining.seconds}</div>
+        <div className="text-[8px] xs:text-[10px] sm:text-xs text-blue-600 uppercase font-semibold mt-0.5">SECS</div>
       </div>
     </div>
   );
 }
+
 
 export default function InvestmentsPage() {
   const { token } = useAuth();

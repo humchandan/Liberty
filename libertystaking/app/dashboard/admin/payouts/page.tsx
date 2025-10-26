@@ -100,16 +100,16 @@ export default function AdminPayoutsPage() {
 
   return (
     <DashboardLayout>
-      <div className="mb-8 flex justify-between items-center">
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Order Payouts</h1>
-          <p className="text-gray-600">Process matured investment payouts</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Order Payouts</h1>
+          <p className="text-sm sm:text-base text-gray-600">Process matured investment payouts</p>
         </div>
         
         <button
           onClick={fetchMaturedOrders}
           disabled={refreshing}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm w-full sm:w-auto justify-center"
         >
           <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
           Refresh
@@ -117,72 +117,72 @@ export default function AdminPayoutsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg p-6 text-white">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div className="bg-linear-to-br from-orange-500 to-orange-600 rounded-lg p-4 sm:p-6 text-white">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm opacity-90">Pending Payouts</h3>
-            <Clock size={24} />
+            <h3 className="text-xs sm:text-sm opacity-90">Pending Payouts</h3>
+            <Clock size={20} className="sm:w-6 sm:h-6" />
           </div>
-          <p className="text-4xl font-bold">{maturedOrders.length}</p>
-          <p className="text-sm opacity-90 mt-1">Orders ready for payout</p>
+          <p className="text-3xl sm:text-4xl font-bold">{maturedOrders.length}</p>
+          <p className="text-xs sm:text-sm opacity-90 mt-1">Orders ready for payout</p>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-6 text-white">
+        <div className="bg-linear-to-br from-green-500 to-green-600 rounded-lg p-4 sm:p-6 text-white">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm opacity-90">Total Amount</h3>
-            <DollarSign size={24} />
+            <h3 className="text-xs sm:text-sm opacity-90">Total Amount</h3>
+            <DollarSign size={20} className="sm:w-6 sm:h-6" />
           </div>
-          <p className="text-4xl font-bold">
+          <p className="text-3xl sm:text-4xl font-bold">
             {totalPendingAmount.toFixed(2)}
           </p>
-          <p className="text-sm opacity-90 mt-1">INRT to be paid</p>
+          <p className="text-xs sm:text-sm opacity-90 mt-1">INRT to be paid</p>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-6 text-white">
+        <div className="bg-linear-to-br from-blue-500 to-blue-600 rounded-lg p-4 sm:p-6 text-white">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm opacity-90">Processing</h3>
-            <CheckCircle size={24} />
+            <h3 className="text-xs sm:text-sm opacity-90">Processing</h3>
+            <CheckCircle size={20} className="sm:w-6 sm:h-6" />
           </div>
-          <p className="text-4xl font-bold">{processingOrderId ? '1' : '0'}</p>
-          <p className="text-sm opacity-90 mt-1">Currently processing</p>
+          <p className="text-3xl sm:text-4xl font-bold">{processingOrderId ? '1' : '0'}</p>
+          <p className="text-xs sm:text-sm opacity-90 mt-1">Currently processing</p>
         </div>
       </div>
 
       {/* Matured Orders List */}
       <div className="bg-white rounded-lg border">
-        <div className="p-6 border-b">
-          <h2 className="text-xl font-bold">Matured Orders Awaiting Payout</h2>
+        <div className="p-4 sm:p-6 border-b">
+          <h2 className="text-lg sm:text-xl font-bold">Matured Orders Awaiting Payout</h2>
         </div>
         
         {refreshing ? (
-          <div className="p-12 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading orders...</p>
+          <div className="p-8 sm:p-12 text-center">
+            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-sm sm:text-base text-gray-600">Loading orders...</p>
           </div>
         ) : maturedOrders.length === 0 ? (
-          <div className="p-12 text-center">
-            <CheckCircle className="mx-auto text-green-500 mb-4" size={48} />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">All Caught Up!</h3>
-            <p className="text-gray-600">No pending payouts at the moment</p>
+          <div className="p-8 sm:p-12 text-center">
+            <CheckCircle className="mx-auto text-green-500 mb-4" size={40} />
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">All Caught Up!</h3>
+            <p className="text-sm sm:text-base text-gray-600">No pending payouts at the moment</p>
           </div>
         ) : (
           <div className="divide-y">
             {maturedOrders.map((order) => (
-              <div key={order.investmentId} className="p-6 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center justify-between">
+              <div key={order.investmentId} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <h3 className="text-lg font-bold">Order #{order.orderId}</h3>
-                      <span className="px-3 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-3 flex-wrap">
+                      <h3 className="text-base sm:text-lg font-bold">Order #{order.orderId}</h3>
+                      <span className="px-2 sm:px-3 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">
                         Matured
                       </span>
                     </div>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 text-xs sm:text-sm">
                       <div>
                         <p className="text-gray-600">User</p>
                         <p className="font-medium">{order.fullName}</p>
-                        <p className="font-mono text-xs text-gray-500">{order.walletAddress.slice(0, 10)}...</p>
+                        <p className="font-mono text-[10px] sm:text-xs text-gray-500">{order.walletAddress.slice(0, 10)}...</p>
                       </div>
                       <div>
                         <p className="text-gray-600">Amount</p>
@@ -208,11 +208,11 @@ export default function AdminPayoutsPage() {
                   <button
                     onClick={() => handlePayOrder(order.orderId)}
                     disabled={processingOrderId === order.orderId}
-                    className="ml-6 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="w-full lg:w-auto lg:ml-6 px-4 sm:px-6 py-2.5 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
                   >
                     {processingOrderId === order.orderId ? (
-                      <span className="flex items-center gap-2">
-                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>

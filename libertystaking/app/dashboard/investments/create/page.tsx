@@ -299,283 +299,267 @@ Join using my link: ${referralLink}`;
 
   const expectedReturn = calculateExpectedReturn();
 
-  return (
-    <DashboardLayout>
-      <div className="mb-8">
-        <Link
-          href="/dashboard/investments"
-          className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4"
-        >
-          <ArrowLeft size={20} />
-          Back to Investments
-        </Link>
-        
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Stake Tokens</h1>
-            <p className="text-gray-600">Choose a token and stake to start earning</p>
-          </div>
-          
-          <div className="flex gap-2">
+return (
+  <DashboardLayout>
+    <div className="mb-8">
+      <Link
+        href="/dashboard/investments"
+        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4"
+      >
+        <ArrowLeft size={20} />
+        Back to Investments
+      </Link>
+      
+      {/* Responsive header & actions */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Stake Tokens</h1>
+          <p className="text-sm sm:text-base text-gray-600">Choose a token and stake to start earning</p>
+        </div>
+        <div className="flex flex-col xs:flex-row gap-2">
+          <button
+            onClick={handleRefresh}
+            disabled={loadingInfo}
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm"
+          >
+            <RefreshCw size={16} className={loadingInfo ? 'animate-spin' : ''} />
+            Refresh
+          </button>
+          <button
+            onClick={handleWhatsAppShare}
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+          >
+            <Share2 size={16} />
+            Share on WhatsApp
+          </button>
+          {isAdmin && selectedTokenInfo?.availableOrders === 0 && (
             <button
-              onClick={handleRefresh}
-              disabled={loadingInfo}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              onClick={handleTriggerEpoch}
+              disabled={loading}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm"
             >
-              <RefreshCw size={16} className={loadingInfo ? 'animate-spin' : ''} />
-              Refresh
+              <RefreshCw size={16} />
+              Trigger Epoch
             </button>
-            
-            <button
-              onClick={handleWhatsAppShare}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-            >
-              <Share2 size={16} />
-              Share on WhatsApp
-            </button>
-            
-            {isAdmin && selectedTokenInfo?.availableOrders === 0 && (
-              <button
-                onClick={handleTriggerEpoch}
-                disabled={loading}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-              >
-                <RefreshCw size={16} />
-                Trigger Epoch
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Epoch Information Banner */}
-      {selectedTokenInfo && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
-            <div className="flex items-center gap-3 mb-2">
-              <Clock size={24} />
-              <h3 className="text-lg font-bold">Current Epoch</h3>
-            </div>
-            <p className="text-4xl font-bold">#{selectedTokenInfo.currentEpoch}</p>
-            <p className="text-sm opacity-90 mt-1">Updates when full or manually triggered</p>
-          </div>
-
-          <div className={`bg-gradient-to-r rounded-lg p-6 text-white ${
-            selectedTokenInfo.availableOrders > 0 
-              ? 'from-green-600 to-green-700' 
-              : 'from-red-600 to-red-700'
-          }`}>
-            <div className="flex items-center gap-3 mb-2">
-              <Package size={24} />
-              <h3 className="text-lg font-bold">Available Orders</h3>
-            </div>
-            <p className="text-4xl font-bold">{selectedTokenInfo.availableOrders}</p>
-            <p className="text-sm opacity-90 mt-1">
-              {selectedTokenInfo.availableOrders > 0 
-                ? 'Orders remaining in this epoch' 
-                : 'Epoch full - Admin needs to trigger new epoch'}
-            </p>
-          </div>
-
-          <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg p-6 text-white">
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingUp size={24} />
-              <h3 className="text-lg font-bold">Current APR</h3>
-            </div>
-            <p className="text-4xl font-bold">{currentAPR}%</p>
-            <p className="text-sm opacity-90 mt-1">For {maturityDays} days staking period</p>
-          </div>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Token Selection */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-lg border p-6">
-            <h2 className="text-xl font-bold mb-4">Select Token</h2>
-            
-            {loadingInfo ? (
-              <div className="flex items-center justify-center h-32">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* INRT Card */}
-                <button
-                  onClick={() => setSelectedToken('INRT')}
-                  disabled={loading || !inrtInfo}
-                  className={`p-6 rounded-lg border-2 transition-all text-left ${
-                    selectedToken === 'INRT'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 hover:border-blue-300'
-                  } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <p className="text-2xl font-bold">INRT</p>
-                      <p className="text-sm text-gray-600">Indian Rupee Token</p>
-                    </div>
-                    <TrendingUp className="text-blue-600" size={24} />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">APR:</span>
-                      <span className="font-bold text-green-600">{currentAPR}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Balance:</span>
-                      <span className="font-bold">{parseFloat(inrtInfo?.balance || '0').toFixed(2)}</span>
-                    </div>
-                  </div>
-                </button>
-
-                {/* USDT Card */}
-                <button
-                  onClick={() => setSelectedToken('USDT')}
-                  disabled={loading || !usdtInfo}
-                  className={`p-6 rounded-lg border-2 transition-all text-left ${
-                    selectedToken === 'USDT'
-                      ? 'border-green-600 bg-green-50'
-                      : 'border-gray-200 hover:border-green-300'
-                  } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <p className="text-2xl font-bold">USDT</p>
-                      <p className="text-sm text-gray-600">Tether USD</p>
-                    </div>
-                    <TrendingUp className="text-green-600" size={24} />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">APR:</span>
-                      <span className="font-bold text-green-600">{currentAPR}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Balance:</span>
-                      <span className="font-bold">{parseFloat(usdtInfo?.balance || '0').toFixed(2)}</span>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Amount Input */}
-          <div className="bg-white rounded-lg border p-6">
-            <h2 className="text-xl font-bold mb-4">Stake Amount</h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Amount ({selectedToken}) *
-                </label>
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder={`Enter amount to stake`}
-                  disabled={loading || loadingInfo}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
-                />
-                <div className="flex justify-between mt-2 text-sm text-gray-600">
-                  <span>Available: {parseFloat(selectedTokenInfo?.balance || '0').toFixed(2)} {selectedToken}</span>
-                  <button
-                    onClick={() => setAmount(selectedTokenInfo?.balance || '0')}
-                    disabled={loading || loadingInfo}
-                    className="text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    Max
-                  </button>
-                </div>
-              </div>
-
-              {selectedTokenInfo && selectedTokenInfo.availableOrders === 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-sm text-red-800">
-                    ⚠️ <strong>Epoch is full!</strong> {isAdmin ? 'Click "Trigger Epoch" button above to start a new epoch.' : 'Please wait for admin to trigger a new epoch.'}
-                  </p>
-                </div>
-              )}
-
-              <button
-                onClick={handleStake}
-                disabled={loading || loadingInfo || !amount || !address || selectedTokenInfo?.availableOrders === 0}
-                className="w-full px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Processing...
-                  </span>
-                ) : (
-                  `Stake ${selectedToken}`
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Summary Card */}
-        <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg p-6 text-white h-fit sticky top-6">
-          <h2 className="text-xl font-bold mb-6">Stake Summary</h2>
-          
-          {selectedTokenInfo ? (
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm opacity-90">Selected Token</p>
-                <p className="text-3xl font-bold">{selectedToken}</p>
-              </div>
-
-              <div className="border-t border-white/20 pt-4">
-                <p className="text-sm opacity-90">APR (From Contract)</p>
-                <p className="text-3xl font-bold text-green-300">{currentAPR}%</p>
-              </div>
-
-              <div className="border-t border-white/20 pt-4">
-                <p className="text-sm opacity-90">Staking Period</p>
-                <p className="text-3xl font-bold">{maturityDays}</p>
-                <p className="text-sm opacity-90">Days</p>
-              </div>
-
-              <div className="border-t border-white/20 pt-4">
-                <p className="text-sm opacity-90">Stake Amount</p>
-                <p className="text-3xl font-bold">{parseFloat(amount || '0').toFixed(2)}</p>
-                <p className="text-sm opacity-90">{selectedToken}</p>
-              </div>
-
-              <div className="border-t border-white/20 pt-4">
-                <p className="text-sm opacity-90">Expected Return ({maturityDays} days)</p>
-                <p className="text-2xl font-bold text-green-300">
-                  {expectedReturn.total} {selectedToken}
-                </p>
-                <p className="text-sm opacity-90 mt-1">
-                  Profit: {expectedReturn.profit} {selectedToken}
-                </p>
-                <p className="text-xs opacity-75 mt-2">
-                  Based on {currentAPR}% APR for {maturityDays} days
-                </p>
-              </div>
-
-              <div className="border-t border-white/20 pt-4">
-                <p className="text-xs opacity-75">
-                  Epoch: #{selectedTokenInfo.currentEpoch}
-                </p>
-                <p className="text-xs opacity-75 mt-1">
-                  Available Orders: {selectedTokenInfo.availableOrders}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-32">
-              <p className="text-sm opacity-75">Loading token information...</p>
-            </div>
           )}
         </div>
       </div>
-    </DashboardLayout>
-  );
-}
+    </div>
+
+    {/* Epoch Information Banner */}
+    {selectedTokenInfo && (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-linear-to-r from-blue-600 to-blue-700 rounded-lg p-4 sm:p-6 text-white">
+          <div className="flex items-center gap-3 mb-1 sm:mb-2">
+            <Clock size={20} className="sm:w-6 sm:h-6" />
+            <h3 className="text-base sm:text-lg font-bold">Current Epoch</h3>
+          </div>
+          <p className="text-2xl sm:text-4xl font-bold">#{selectedTokenInfo.currentEpoch}</p>
+          <p className="text-xs sm:text-sm opacity-90 mt-1">Updates when full or manually triggered</p>
+        </div>
+        <div className={`bg-linear-to-r rounded-lg p-4 sm:p-6 text-white ${
+          selectedTokenInfo.availableOrders > 0 
+            ? 'from-green-600 to-green-700' 
+            : 'from-red-600 to-red-700'
+        }`}>
+          <div className="flex items-center gap-3 mb-1 sm:mb-2">
+            <Package size={20} className="sm:w-6 sm:h-6" />
+            <h3 className="text-base sm:text-lg font-bold">Available Orders</h3>
+          </div>
+          <p className="text-2xl sm:text-4xl font-bold">{selectedTokenInfo.availableOrders}</p>
+          <p className="text-xs sm:text-sm opacity-90 mt-1">
+            {selectedTokenInfo.availableOrders > 0 
+              ? 'Orders remaining in this epoch' 
+              : 'Epoch full - Admin needs to trigger new epoch'}
+          </p>
+        </div>
+        <div className="bg-linear-to-r from-purple-600 to-purple-700 rounded-lg p-4 sm:p-6 text-white">
+          <div className="flex items-center gap-3 mb-1 sm:mb-2">
+            <TrendingUp size={20} className="sm:w-6 sm:h-6" />
+            <h3 className="text-base sm:text-lg font-bold">Current APR</h3>
+          </div>
+          <p className="text-2xl sm:text-4xl font-bold">{currentAPR}%</p>
+          <p className="text-xs sm:text-sm opacity-90 mt-1">For {maturityDays} days staking period</p>
+        </div>
+      </div>
+    )}
+
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+        {/* Select Token */}
+        <div className="bg-white rounded-lg border p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-bold mb-4">Select Token</h2>
+          {loadingInfo ? (
+            <div className="flex items-center justify-center h-24 sm:h-32">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              {/* INRT Card */}
+              <button
+                onClick={() => setSelectedToken('INRT')}
+                disabled={loading || !inrtInfo}
+                className={`p-4 sm:p-6 rounded-lg border-2 transition-all text-left ${
+                  selectedToken === 'INRT'
+                    ? 'border-blue-600 bg-blue-50'
+                    : 'border-gray-200 hover:border-blue-300'
+                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <div className="flex justify-between items-start mb-2 sm:mb-3">
+                  <div>
+                    <p className="text-lg sm:text-2xl font-bold">INRT</p>
+                    <p className="text-xs sm:text-sm text-gray-600">Indian Rupee Token</p>
+                  </div>
+                  <TrendingUp className="text-blue-600" size={18} />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-xs sm:text-sm text-gray-600">APR:</span>
+                    <span className="font-bold text-green-600">{currentAPR}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-xs sm:text-sm text-gray-600">Balance:</span>
+                    <span className="font-bold">{parseFloat(inrtInfo?.balance || '0').toFixed(2)}</span>
+                  </div>
+                </div>
+              </button>
+              {/* USDT Card */}
+              <button
+                onClick={() => setSelectedToken('USDT')}
+                disabled={loading || !usdtInfo}
+                className={`p-4 sm:p-6 rounded-lg border-2 transition-all text-left ${
+                  selectedToken === 'USDT'
+                    ? 'border-green-600 bg-green-50'
+                    : 'border-gray-200 hover:border-green-300'
+                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <div className="flex justify-between items-start mb-2 sm:mb-3">
+                  <div>
+                    <p className="text-lg sm:text-2xl font-bold">USDT</p>
+                    <p className="text-xs sm:text-sm text-gray-600">Tether USD</p>
+                  </div>
+                  <TrendingUp className="text-green-600" size={18} />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-xs sm:text-sm text-gray-600">APR:</span>
+                    <span className="font-bold text-green-600">{currentAPR}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-xs sm:text-sm text-gray-600">Balance:</span>
+                    <span className="font-bold">{parseFloat(usdtInfo?.balance || '0').toFixed(2)}</span>
+                  </div>
+                </div>
+              </button>
+            </div>
+          )}
+        </div>
+        {/* Amount Input */}
+        <div className="bg-white rounded-lg border p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-bold mb-4">Stake Amount</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                Amount ({selectedToken}) *
+              </label>
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder={`Enter amount to stake`}
+                disabled={loading || loadingInfo}
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 text-sm sm:text-base"
+              />
+              <div className="flex justify-between mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">
+                <span>Available: {parseFloat(selectedTokenInfo?.balance || '0').toFixed(2)} {selectedToken}</span>
+                <button
+                  onClick={() => setAmount(selectedTokenInfo?.balance || '0')}
+                  disabled={loading || loadingInfo}
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Max
+                </button>
+              </div>
+            </div>
+            {selectedTokenInfo && selectedTokenInfo.availableOrders === 0 && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 text-xs sm:text-sm">
+                <p className="text-red-800">
+                  ⚠️ <strong>Epoch is full!</strong> {isAdmin ? 'Click "Trigger Epoch" button above to start a new epoch.' : 'Please wait for admin to trigger a new epoch.'}
+                </p>
+              </div>
+            )}
+            <button
+              onClick={handleStake}
+              disabled={loading || loadingInfo || !amount || !address || selectedTokenInfo?.availableOrders === 0}
+              className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-base sm:text-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                `Stake ${selectedToken}`
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Summary Card */}
+      <div className="bg-linear-to-br from-purple-600 to-blue-600 rounded-lg p-4 sm:p-6 text-white h-fit sticky top-4">
+        <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Stake Summary</h2>
+        {selectedTokenInfo ? (
+          <div className="space-y-3 sm:space-y-4">
+            <div>
+              <p className="text-xs sm:text-sm opacity-90">Selected Token</p>
+              <p className="text-2xl sm:text-3xl font-bold">{selectedToken}</p>
+            </div>
+            <div className="border-t border-white/20 pt-3 sm:pt-4">
+              <p className="text-xs sm:text-sm opacity-90">APR (From Contract)</p>
+              <p className="text-2xl sm:text-3xl font-bold text-green-300">{currentAPR}%</p>
+            </div>
+            <div className="border-t border-white/20 pt-3 sm:pt-4">
+              <p className="text-xs sm:text-sm opacity-90">Staking Period</p>
+              <p className="text-2xl sm:text-3xl font-bold">{maturityDays}</p>
+              <p className="text-xs sm:text-sm opacity-90">Days</p>
+            </div>
+            <div className="border-t border-white/20 pt-3 sm:pt-4">
+              <p className="text-xs sm:text-sm opacity-90">Stake Amount</p>
+              <p className="text-2xl sm:text-3xl font-bold">{parseFloat(amount || '0').toFixed(2)}</p>
+              <p className="text-xs sm:text-sm opacity-90">{selectedToken}</p>
+            </div>
+            <div className="border-t border-white/20 pt-3 sm:pt-4">
+              <p className="text-xs sm:text-sm opacity-90">Expected Return ({maturityDays} days)</p>
+              <p className="text-xl sm:text-2xl font-bold text-green-300">
+                {expectedReturn.total} {selectedToken}
+              </p>
+              <p className="text-xs sm:text-sm opacity-90 mt-1">
+                Profit: {expectedReturn.profit} {selectedToken}
+              </p>
+              <p className="text-[10px] xs:text-xs opacity-75 mt-2">
+                Based on {currentAPR}% APR for {maturityDays} days
+              </p>
+            </div>
+            <div className="border-t border-white/20 pt-3 sm:pt-4">
+              <p className="text-[10px] xs:text-xs opacity-75">
+                Epoch: #{selectedTokenInfo.currentEpoch}
+              </p>
+              <p className="text-[10px] xs:text-xs opacity-75 mt-1">
+                Available Orders: {selectedTokenInfo.availableOrders}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center h-24 sm:h-32">
+            <p className="text-xs sm:text-sm opacity-75">Loading token information...</p>
+          </div>
+        )}
+      </div>
+    </div>
+  </DashboardLayout>
+);
+};

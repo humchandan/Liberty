@@ -36,10 +36,8 @@ export function CountdownTimer({ maturityDate }: { maturityDate: string | Date }
   useEffect(() => {
     const targetDate = typeof maturityDate === 'string' ? new Date(maturityDate) : maturityDate;
     
-    // Update immediately
     setTimeRemaining(calculateTimeRemaining(targetDate));
     
-    // Update every second
     const interval = setInterval(() => {
       setTimeRemaining(calculateTimeRemaining(targetDate));
     }, 1000);
@@ -48,22 +46,25 @@ export function CountdownTimer({ maturityDate }: { maturityDate: string | Date }
   }, [maturityDate]);
 
   return (
-    <div className="flex gap-4">
-      <div className="text-center">
-        <div className="text-3xl font-bold">{timeRemaining.days}</div>
-        <div className="text-xs text-gray-600">Days</div>
+    <div className="flex gap-1.5 xs:gap-2 sm:gap-4 justify-center items-center text-center">
+      <div className="flex flex-col items-center min-w-10 xs:min-w-[3rem] sm:min-w-16">
+        <div className="text-base xs:text-xl sm:text-3xl font-bold leading-tight">{timeRemaining.days}</div>
+        <div className="text-[8px] xs:text-[10px] sm:text-xs text-gray-600 uppercase mt-0.5">DAYS</div>
       </div>
-      <div className="text-center">
-        <div className="text-3xl font-bold">{timeRemaining.hours}</div>
-        <div className="text-xs text-gray-600">Hours</div>
+      <div className="text-base xs:text-xl sm:text-3xl font-bold text-gray-400 leading-none">:</div>
+      <div className="flex flex-col items-center min-w-10 xs:min-w-[3rem] sm:min-w-16">
+        <div className="text-base xs:text-xl sm:text-3xl font-bold leading-tight">{timeRemaining.hours}</div>
+        <div className="text-[8px] xs:text-[10px] sm:text-xs text-gray-600 uppercase mt-0.5">HOURS</div>
       </div>
-      <div className="text-center">
-        <div className="text-3xl font-bold">{timeRemaining.minutes}</div>
-        <div className="text-xs text-gray-600">Minutes</div>
+      <div className="text-base xs:text-xl sm:text-3xl font-bold text-gray-400 leading-none">:</div>
+      <div className="flex flex-col items-center min-w-10 xs:min-w-[3rem] sm:min-w-16">
+        <div className="text-base xs:text-xl sm:text-3xl font-bold leading-tight">{timeRemaining.minutes}</div>
+        <div className="text-[8px] xs:text-[10px] sm:text-xs text-gray-600 uppercase mt-0.5">MINS</div>
       </div>
-      <div className="text-center">
-        <div className="text-3xl font-bold text-blue-600">{timeRemaining.seconds}</div>
-        <div className="text-xs text-gray-600">Seconds</div>
+      <div className="text-base xs:text-xl sm:text-3xl font-bold text-gray-400 leading-none">:</div>
+      <div className="flex flex-col items-center min-w-10 xs:min-w-[3rem] sm:min-w-16">
+        <div className="text-base xs:text-xl sm:text-3xl font-bold text-blue-600 leading-tight">{timeRemaining.seconds}</div>
+        <div className="text-[8px] xs:text-[10px] sm:text-xs text-gray-600 uppercase mt-0.5">SECS</div>
       </div>
     </div>
   );

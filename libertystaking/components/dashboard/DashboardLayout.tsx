@@ -5,11 +5,12 @@ import { Sidebar } from './Sidebar';
 import { AnnouncementBanner } from '@/components/AnnouncementBanner';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -20,7 +21,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar />
+        <Navbar onMenuClick={() => {}} />
         <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
@@ -37,14 +38,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      <Navbar onMenuClick={() => setSidebarOpen(true)} />
       <div className="flex">
-        <Sidebar />
-        <main className="flex-1 p-8">
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full lg:w-auto">
           {children}
         </main>
       </div>
-      {/* ✅ Add Announcement Banner */}
       <AnnouncementBanner />
     </div>
   );
