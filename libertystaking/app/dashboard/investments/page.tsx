@@ -32,7 +32,6 @@ interface Investment {
   txHash: string;
 }
 
-// ✅ Countdown Timer Component (Ultra Mobile Responsive)
 function CountdownTimer({ maturityDate }: { maturityDate: string }) {
   const [timeRemaining, setTimeRemaining] = useState({ 
     days: 0, 
@@ -43,7 +42,7 @@ function CountdownTimer({ maturityDate }: { maturityDate: string }) {
 
   useEffect(() => {
     const targetDate = new Date(maturityDate);
-    
+
     const updateCountdown = () => {
       const now = new Date();
       const difference = targetDate.getTime() - now.getTime();
@@ -92,7 +91,6 @@ function CountdownTimer({ maturityDate }: { maturityDate: string }) {
   );
 }
 
-
 export default function InvestmentsPage() {
   const { token } = useAuth();
   const [investments, setInvestments] = useState<Investment[]>([]);
@@ -103,6 +101,7 @@ export default function InvestmentsPage() {
     if (token) {
       fetchInvestments();
     }
+    // eslint-disable-next-line
   }, [token, filter]);
 
   const fetchInvestments = async () => {
@@ -114,9 +113,12 @@ export default function InvestmentsPage() {
       const data = await res.json();
       if (data.success) {
         setInvestments(data.investments);
+      } else {
+        setInvestments([]);
       }
     } catch (error) {
       console.error('Failed to fetch investments:', error);
+      setInvestments([]);
     } finally {
       setLoading(false);
     }
@@ -191,7 +193,6 @@ export default function InvestmentsPage() {
                     {investment.orderId ? `Order #${investment.orderId}` : 'Processing...'}
                   </p>
                 </div>
-                
                 <div className="text-right">
                   <p className="text-2xl font-bold text-green-600">{investment.lockedApr}% APR</p>
                   <p className="text-sm text-gray-600">
@@ -207,19 +208,16 @@ export default function InvestmentsPage() {
                   </p>
                   <p className="font-medium">{new Date(investment.stakeDate).toLocaleDateString()}</p>
                 </div>
-                
                 <div>
                   <p className="text-sm text-gray-600 flex items-center gap-1">
                     <Clock size={16} /> Maturity
                   </p>
                   <p className="font-medium">{new Date(investment.maturityDate).toLocaleDateString()}</p>
                 </div>
-                
                 <div>
                   <p className="text-sm text-gray-600">Orders</p>
                   <p className="font-medium">{investment.paidOrderCount} / {investment.orderCount}</p>
                 </div>
-                
                 <div>
                   <p className="text-sm text-gray-600">Per Order</p>
                   <p className="font-medium">
@@ -258,7 +256,6 @@ export default function InvestmentsPage() {
         </div>
       )}
 
-      {/* Create New Investment Button (Fixed Position) */}
       {investments.length > 0 && (
         <div className="fixed bottom-8 right-8">
           <Link

@@ -2,6 +2,42 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
 import { query } from '@/lib/db/queries';
 
+interface Investment {
+  investmentId: number;
+  orderId: number | null;
+  tokenSymbol: string;
+  totalAmount: string;
+  orderCount: number;
+  amountPerOrder: string;
+  lockedApr: number;
+  lockedMaturityDuration: number;
+  stakeDate: string;
+  maturityDate: string;
+  epochId: number;
+  paidOrderCount: number;
+  fullyPaid: boolean;
+  isReinvestment: boolean;
+  status: string;
+  txHash: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface EnrichedInvestment extends Investment {
+  lockedAprPercentage: number;
+  maturityCountdown: {
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+    isMatured: boolean;
+  };
+  remainingOrders: number;
+  expectedInterest: string;
+  expectedPayout: string;
+  canClaim: boolean;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get('Authorization');
@@ -24,9 +60,9 @@ export async function GET(req: NextRequest) {
 
     const userId = decoded.userId;
     const { searchParams } = new URL(req.url);
-    const status = searchParams.get('status');
+    const statusFilter = searchParams.get('status');
 
-    // Build query based on status filter
+    // ✅ Build query based on status filter
     let sql = `
       SELECT 
         investment_id as investmentId,
@@ -53,19 +89,20 @@ export async function GET(req: NextRequest) {
 
     const params: any[] = [userId];
 
-    if (status && status !== 'all') {
+    if (statusFilter && statusFilter !== 'all') {
       sql += ' AND status = ?';
-      params.push(status);
+      params.push(statusFilter);
     }
 
     sql += ' ORDER BY created_at DESC';
 
-    const investments = await query(sql, params);
+    const investments = await query<Investment>(sql, params);
 
-    // Calculate maturity countdown for each investment
+    // ✅ Calculate maturity countdown and expected returns
     const now = new Date();
-    const enrichedInvestments = investments.map((inv: any) => {
+    const enrichedInvestments: EnrichedInvestment[] = investments.map((inv: Investment) => {
       const maturityDate = new Date(inv.maturityDate);
+      const stakeDate = new Date(inv.stakeDate);
       const difference = maturityDate.getTime() - now.getTime();
       
       const isMatured = difference <= 0;
@@ -75,12 +112,23 @@ export async function GET(req: NextRequest) {
       const seconds = Math.max(0, Math.floor((difference % (1000 * 60)) / 1000));
 
       const remainingOrders = inv.orderCount - inv.paidOrderCount;
-      const expectedInterest = (parseFloat(inv.totalAmount) * (inv.lockedApr / 10000) * (inv.lockedMaturityDuration / 31536000)).toFixed(2);
-      const expectedPayout = (parseFloat(inv.totalAmount) + parseFloat(expectedInterest)).toFixed(2);
+      
+      // ✅ Calculate expected interest (with 5% fee)
+      const principal = parseFloat(inv.totalAmount);
+      const aprPercentage = inv.lockedApr / 100; // Convert BP to %
+      const durationDays = inv.lockedMaturityDuration / 86400; // Convert seconds to days
+      const dailyRate = aprPercentage / 365 / 100;
+      const interest = principal * dailyRate * durationDays;
+      const interestFee = interest * 0.05; // 5% fee
+      const netInterest = interest - interestFee;
+      const expectedPayout = principal + netInterest;
+
+      // ✅ Can claim if matured and not fully paid
+      const canClaim = isMatured && !inv.fullyPaid && inv.status === 'active';
 
       return {
         ...inv,
-        lockedApr: inv.lockedApr / 100, // Convert basis points to percentage
+        lockedAprPercentage: aprPercentage,
         maturityCountdown: {
           days,
           hours,
@@ -89,14 +137,32 @@ export async function GET(req: NextRequest) {
           isMatured,
         },
         remainingOrders,
-        expectedInterest,
-        expectedPayout,
+        expectedInterest: netInterest.toFixed(2),
+        expectedPayout: expectedPayout.toFixed(2),
+        canClaim
       };
     });
+
+    // ✅ Calculate summary stats
+    const summary = {
+      total: enrichedInvestments.length,
+      active: enrichedInvestments.filter(i => i.status === 'active' && !i.maturityCountdown.isMatured).length,
+      matured: enrichedInvestments.filter(i => i.canClaim).length,
+      claimed: enrichedInvestments.filter(i => i.fullyPaid).length,
+      totalStaked: enrichedInvestments
+        .filter(i => i.status === 'active')
+        .reduce((sum, i) => sum + parseFloat(i.totalAmount), 0)
+        .toFixed(2),
+      totalClaimable: enrichedInvestments
+        .filter(i => i.canClaim)
+        .reduce((sum, i) => sum + parseFloat(i.expectedPayout), 0)
+        .toFixed(2),
+    };
 
     return NextResponse.json({
       success: true,
       investments: enrichedInvestments,
+      summary
     });
   } catch (error: any) {
     console.error('Failed to fetch investments:', error);

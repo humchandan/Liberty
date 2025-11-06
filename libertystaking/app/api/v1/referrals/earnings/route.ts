@@ -1,50 +1,82 @@
-import { NextResponse } from 'next/server';
-import { withAuth } from '@/lib/auth/middleware';
-import { getUserReferralEarnings } from '@/lib/db/referrals';
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyToken } from '@/lib/auth/jwt';
+import { query } from '@/lib/db/queries';
 
-export const GET = withAuth(async (request, user) => {
+export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const claimedFilter = searchParams.get('claimed');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { success: false, error: { message: 'Unauthorized' } },
+        { status: 401 }
+      );
+    }
 
-    let claimed: boolean | undefined;
-    if (claimedFilter === 'true') claimed = true;
-    else if (claimedFilter === 'false') claimed = false;
+    const token = authHeader.substring(7);
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: { message: 'Invalid token' } },
+        { status: 401 }
+      );
+    }
 
-    const { earnings, total } = await getUserReferralEarnings(user.userId, claimed, page, limit);
+    const { searchParams } = new URL(req.url);
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const offset = parseInt(searchParams.get('offset') || '0');
+
+    const earnings = await query<{
+  earning_id: number;
+  referee_wallet: string;
+  level: number;
+  amount: string;
+  percentage: number;
+  investment_amount: string;
+  claimed: boolean;
+  earned_at: string;
+  tx_hash: string;
+}>(
+  `SELECT 
+    earning_id,
+    referee_wallet,
+    level,
+    amount,
+    percentage,
+    investment_amount,
+    claimed,
+    earned_at,
+    tx_hash
+  FROM referral_earnings
+  WHERE referrer_user_id = ?
+  ORDER BY earned_at DESC
+  LIMIT ? OFFSET ?`,
+  [decoded.userId, limit, offset]
+);
+
+// Transform to match frontend interface
+const transformedEarnings = earnings.map(e => ({
+  earningId: e.earning_id,
+  refereeWallet: e.referee_wallet,
+  level: e.level,
+  amount: e.amount,
+  percentage: e.percentage,
+  investmentAmount: e.investment_amount,
+  claimed: e.claimed,
+  earnedAt: e.earned_at,
+  txHash: e.tx_hash
+}));
+
 
     return NextResponse.json({
       success: true,
-      earnings: earnings.map((earning: any) => ({
-        earningId: earning.earning_id,
-        refereeWallet: earning.referee_wallet,
-        level: earning.level,
-        amount: earning.amount,
-        percentage: earning.percentage,
-        investmentAmount: earning.investment_amount,
-        claimed: earning.claimed,
-        earnedAt: earning.earned_at,
-        txHash: earning.tx_hash,
-      })),
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(total / limit),
-        totalItems: total,
-      },
+      earnings: transformedEarnings
     });
-  } catch (error) {
-    console.error('Earnings list error:', error);
+
+  } catch (error: any) {
+    console.error('Referral earnings error:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'SERVER_ERROR',
-          message: 'Failed to fetch earnings',
-        },
-      },
+      { success: false, error: { message: error.message || 'Failed to fetch referral earnings' } },
       { status: 500 }
     );
   }
-});
+}

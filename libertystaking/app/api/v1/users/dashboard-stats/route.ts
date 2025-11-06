@@ -1,10 +1,27 @@
-import { NextResponse } from 'next/server';
-import { withAuth } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyToken } from '@/lib/auth/jwt';
 import { queryOne } from '@/lib/db/queries';
 
-export const GET = withAuth(async (request, user) => {
+export async function GET(request: NextRequest) {
   try {
-    // Get investment stats
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { success: false, error: { message: 'Unauthorized' } },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: { message: 'Invalid token' } },
+        { status: 401 }
+      );
+    }
+
+    // ✅ Get investment stats (fixed status check)
     const investmentStats = await queryOne<{
       totalInvested: string;
       activeInvestments: number;
@@ -13,26 +30,27 @@ export const GET = withAuth(async (request, user) => {
         COALESCE(SUM(total_amount), 0) as totalInvested,
         COUNT(*) as activeInvestments
        FROM investments 
-       WHERE user_id = ? AND status IN ('active', 'matured', 'partially_paid')`,
-      [user.userId]
+       WHERE user_id = ? AND status = 'active'`,
+      [decoded.userId]
     );
 
-    // Get referral stats
-    const referralStats = await queryOne<{
-      totalEarned: string;
-      totalClaimed: string;
-      pendingClaims: string;
-    }>(
-      `SELECT 
-        COALESCE(SUM(amount), 0) as totalEarned,
-        COALESCE(SUM(CASE WHEN claimed = 1 THEN amount ELSE 0 END), 0) as totalClaimed,
-        COALESCE(SUM(CASE WHEN claimed = 0 THEN amount ELSE 0 END), 0) as pendingClaims
-       FROM referral_earnings 
-       WHERE referrer_user_id = ?`,
-      [user.userId]
-    );
+    // Get referral stats (FIXED column names)
+const referralStats = await queryOne<{
+  totalEarned: string;
+  totalClaimed: string;
+  pendingClaims: string;
+}>(
+  `SELECT 
+    COALESCE(SUM(amount), 0) as totalEarned,
+    COALESCE(SUM(CASE WHEN claimed = 1 THEN amount ELSE 0 END), 0) as totalClaimed,
+    COALESCE(SUM(CASE WHEN claimed = 0 THEN amount ELSE 0 END), 0) as pendingClaims
+   FROM referral_earnings 
+   WHERE referrer_user_id = ?`,
+  [decoded.userId]
+);
 
-    // Get team stats
+
+    // ✅ Get team stats (fixed column names)
     const teamStats = await queryOne<{
       totalSize: number;
       activeMembers: number;
@@ -42,7 +60,7 @@ export const GET = withAuth(async (request, user) => {
         active_members as activeMembers
        FROM team_stats 
        WHERE user_id = ?`,
-      [user.userId]
+      [decoded.userId]
     );
 
     return NextResponse.json({
@@ -50,8 +68,6 @@ export const GET = withAuth(async (request, user) => {
       stats: {
         totalInvested: investmentStats?.totalInvested || '0',
         activeInvestments: investmentStats?.activeInvestments || 0,
-        totalEarned: '0', // Calculate from investments
-        pendingPayouts: '0', // Calculate from mature investments
         referralEarnings: {
           total: referralStats?.totalEarned || '0',
           claimable: referralStats?.pendingClaims || '0',
@@ -64,17 +80,17 @@ export const GET = withAuth(async (request, user) => {
         },
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Dashboard stats error:', error);
     return NextResponse.json(
       {
         success: false,
         error: {
           code: 'SERVER_ERROR',
-          message: 'Failed to fetch dashboard stats',
+          message: error.message || 'Failed to fetch dashboard stats',
         },
       },
       { status: 500 }
     );
   }
-});
+}

@@ -5,6 +5,7 @@ export interface User {
   wallet_address: string;
   custom_referral_code: string;
   referrer_wallet_address: string | null;
+  referred_by: string | null; // ✅ Fixed typo (was referrer_by)
   referrer_code: string | null;
   full_name: string;
   email: string;
@@ -121,13 +122,14 @@ export async function createUser(userData: {
 }): Promise<number> {
   const userId = await insert(
     `INSERT INTO users (
-      wallet_address, custom_referral_code, referrer_wallet_address, referrer_code,
+      wallet_address, custom_referral_code, referrer_wallet_address, referred_by, referrer_code,
       full_name, email, mobile_number, address, zip_code, country
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       userData.walletAddress.toLowerCase(),
       userData.customReferralCode,
       userData.referrerWalletAddress?.toLowerCase() || null,
+      userData.referrerWalletAddress?.toLowerCase() || null, // ✅ Same value for both columns
       userData.referrerCode || null,
       userData.fullName,
       userData.email.toLowerCase(),
@@ -146,7 +148,7 @@ export async function createUser(userData: {
       userId,
       userData.walletAddress.toLowerCase(),
       userData.customReferralCode,
-      `${process.env.NEXT_PUBLIC_APP_URL}/join/${userData.customReferralCode}`,
+      `${process.env.NEXT_PUBLIC_APP_URL}/signup?ref=${userData.customReferralCode}`,
     ]
   );
 
@@ -167,6 +169,34 @@ export async function updateLastLogin(userId: number): Promise<number> {
     'UPDATE users SET last_login = NOW() WHERE user_id = ?',
     [userId]
   );
+}
+
+/**
+ * ✅ Mark referrer as set on blockchain
+ */
+export async function markReferrerSetOnchain(
+  userId: number,
+  txHash: string
+): Promise<number> {
+  return await update(
+    `UPDATE users 
+     SET referrer_set_onchain = TRUE, 
+         referrer_set_tx_hash = ?,
+         updated_at = NOW()
+     WHERE user_id = ?`,
+    [txHash, userId]
+  );
+}
+
+/**
+ * ✅ Get referrer wallet address for a user
+ */
+export async function getUserReferrerWallet(userId: number): Promise<string | null> {
+  const result = await queryOne<{ referrer_wallet_address: string | null }>(
+    'SELECT referrer_wallet_address FROM users WHERE user_id = ?',
+    [userId]
+  );
+  return result?.referrer_wallet_address || null;
 }
 
 /**

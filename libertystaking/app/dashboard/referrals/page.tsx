@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Users, DollarSign, Copy, CheckCircle, Link as LinkIcon } from 'lucide-react';
+import { useAccount } from 'wagmi';
 
 interface ReferralStats {
   totalTeamSize: number;
@@ -31,13 +32,16 @@ interface Earning {
   claimed: boolean;
   earnedAt: string;
   txHash: string;
+  tokenSymbol: string; // ✅ NEW
 }
 
 export default function ReferralsPage() {
   const { user, token } = useAuth();
+  const { address } = useAccount();
   const [stats, setStats] = useState<ReferralStats | null>(null);
   const [earnings, setEarnings] = useState<Earning[]>([]);
   const [loading, setLoading] = useState(true);
+  const [claiming, setClaiming] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -85,6 +89,41 @@ export default function ReferralsPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // ✅ UPDATED: Dynamic claim with INRT (default for now)
+  const handleClaim = async () => {
+    if (!address || !stats?.earnings.canClaim) return;
+
+    setClaiming(true);
+    try {
+      const res = await fetch('/api/v1/referrals/claim', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tokenSymbol: 'INRT', // ✅ Currently hardcoded to INRT
+          txHash: 'backend_claim' // ✅ Dummy txHash
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert(`Successfully claimed ${data.claimed.amount} ${data.claimed.tokenSymbol}!`);
+        await fetchStats();
+        await fetchEarnings();
+      } else {
+        alert(`Claim failed: ${data.error?.message || 'Unknown error'}`);
+      }
+    } catch (error: any) {
+      console.error('Claim error:', error);
+      alert(`Claim failed: ${error.message}`);
+    } finally {
+      setClaiming(false);
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="mb-6 sm:mb-8">
@@ -93,7 +132,7 @@ export default function ReferralsPage() {
       </div>
 
       {/* Referral Link Card */}
-      <div className="bg-linear-to-r from-blue-600 to-purple-600 rounded-lg p-4 sm:p-6 text-white mb-4 sm:mb-6">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-4 sm:p-6 text-white mb-4 sm:mb-6">
         <div className="flex items-center gap-2 mb-3">
           <LinkIcon size={20} className="sm:w-6 sm:h-6" />
           <h2 className="text-lg sm:text-xl font-bold">Your Referral Link</h2>
@@ -146,8 +185,12 @@ export default function ReferralsPage() {
           </div>
           <p className="text-2xl sm:text-3xl font-bold">{parseFloat(stats?.earnings.pendingClaims || '0').toFixed(2)} INRT</p>
           {stats?.earnings.canClaim ? (
-            <button className="mt-2 sm:mt-3 w-full px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm">
-              Claim Now
+            <button 
+              onClick={handleClaim}
+              disabled={claiming}
+              className="mt-2 sm:mt-3 w-full px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {claiming ? 'Claiming...' : 'Claim Now'}
             </button>
           ) : (
             <p className="text-xs sm:text-sm text-gray-600 mt-2">
@@ -164,14 +207,17 @@ export default function ReferralsPage() {
           <div className="text-center p-3 sm:p-4 bg-blue-50 rounded-lg">
             <p className="text-xl sm:text-2xl font-bold text-blue-600">{stats?.level1Count || 0}</p>
             <p className="text-xs sm:text-sm text-gray-600 mt-1">Level 1</p>
+            <p className="text-xs text-gray-500">3%</p>
           </div>
           <div className="text-center p-3 sm:p-4 bg-purple-50 rounded-lg">
             <p className="text-xl sm:text-2xl font-bold text-purple-600">{stats?.level2Count || 0}</p>
             <p className="text-xs sm:text-sm text-gray-600 mt-1">Level 2</p>
+            <p className="text-xs text-gray-500">1.5%</p>
           </div>
           <div className="text-center p-3 sm:p-4 bg-pink-50 rounded-lg">
             <p className="text-xl sm:text-2xl font-bold text-pink-600">{stats?.level3Count || 0}</p>
             <p className="text-xs sm:text-sm text-gray-600 mt-1">Level 3</p>
+            <p className="text-xs text-gray-500">0.5%</p>
           </div>
         </div>
       </div>
@@ -203,7 +249,9 @@ export default function ReferralsPage() {
                   </p>
                 </div>
                 <div className="text-left xs:text-right w-full xs:w-auto">
-                  <p className="text-base sm:text-lg font-bold text-green-600">+{earning.amount} INRT</p>
+                  <p className="text-base sm:text-lg font-bold text-green-600">
+                    +{earning.amount} {earning.tokenSymbol || 'INRT'}
+                  </p>
                   <p className="text-xs sm:text-sm text-gray-600">{earning.percentage}%</p>
                   {earning.claimed && (
                     <span className="text-xs text-green-600">✓ Claimed</span>
