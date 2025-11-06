@@ -67,11 +67,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let referrerWallet: string | null = null;
+    // ✅ Get referrer's wallet address from their custom code
+    let referrerWalletAddress: string | null = null;
     if (referrerCode) {
+      console.log('🔍 Looking up referrer with code:', referrerCode);
       const referrer = await getUserByReferralCode(referrerCode);
       if (referrer) {
-        referrerWallet = referrer.wallet_address;
+        referrerWalletAddress = referrer.wallet_address;
+        console.log('✅ Found referrer wallet:', referrerWalletAddress);
+      } else {
+        console.log('⚠️ Referrer code not found:', referrerCode);
       }
     }
 
@@ -80,7 +85,7 @@ export async function POST(request: NextRequest) {
     const userId = await createUser({
       walletAddress,
       customReferralCode,
-      referrerWalletAddress: referrerWallet || undefined,
+      referrerWalletAddress: referrerWalletAddress || undefined, // ✅ Save wallet address
       referrerCode: referrerCode || undefined,
       fullName,
       email,
@@ -88,6 +93,14 @@ export async function POST(request: NextRequest) {
       address,
       zipCode,
       country: country || undefined,
+    });
+
+    console.log('✅ User created successfully:', {
+      userId,
+      walletAddress,
+      customReferralCode,
+      hasReferrer: !!referrerWalletAddress,
+      referrerWallet: referrerWalletAddress,
     });
 
     const token = generateToken({
@@ -105,14 +118,14 @@ export async function POST(request: NextRequest) {
         userId,
         walletAddress,
         customReferralCode,
-        referralLink: `${appUrl}/join/${customReferralCode}`,
-        referrerWallet,
+        referralLink: `${appUrl}/signup?ref=${customReferralCode}`,
+        referrerWallet: referrerWalletAddress,
+        hasReferrer: !!referrerWalletAddress,
       },
       token,
-      setReferrerRequired: referrerWallet !== null,
     });
   } catch (error) {
-    console.error('Signup error:', error);
+    console.error('❌ Signup error:', error);
     return NextResponse.json(
       {
         success: false,

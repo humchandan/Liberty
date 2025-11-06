@@ -7,7 +7,6 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { ArrowLeft, User, Mail, Phone, MapPin } from 'lucide-react';
 import { showSuccess, showError, showLoading, dismissToast } from '@/lib/toast';
-import { ContractService } from '@/lib/contracts';
 
 export default function SignupPage() {
   const { isAuthenticated } = useAuth();
@@ -94,34 +93,12 @@ export default function SignupPage() {
         return;
       }
 
-      if (formData.referrerCode && window.ethereum) {
-        const contractToast = showLoading('Setting referrer on blockchain...');
-        
-        try {
-          const contractService = new ContractService(window.ethereum);
-          const existingReferrer = await contractService.getUserReferrer(address);
-          
-          if (existingReferrer === '0x0000000000000000000000000000000000000000') {
-            const setRefTx = await contractService.setReferrer(formData.referrerCode);
-            dismissToast(contractToast);
-            
-            const waitToast = showLoading('Waiting for blockchain confirmation...');
-            await setRefTx.wait();
-            dismissToast(waitToast);
-            
-            showSuccess('Referrer set successfully on blockchain! 🎉');
-          } else {
-            dismissToast(contractToast);
-            console.log('✅ Referrer already set:', existingReferrer);
-          }
-        } catch (contractError: any) {
-          dismissToast(contractToast);
-          console.error('Failed to set referrer on contract:', contractError);
-          showError('Account created but referrer not set on blockchain. You can set it when staking.');
-        }
+      // ✅ Success message with referral info
+      if (formData.referrerCode) {
+        showSuccess(`Welcome to Liberty Finance! 🚀\n\nYour referrer will be set on blockchain when you make your first stake.\n\nYour Referral Code: ${data.user.customReferralCode}`);
+      } else {
+        showSuccess(`Welcome to Liberty Finance! 🚀\n\nReferral Code: ${data.user.customReferralCode}`);
       }
-
-      showSuccess(`Welcome to Liberty Finance! 🚀\nReferral Code: ${data.user.customReferralCode}`);
       
       localStorage.setItem('liberty_token', data.token);
       localStorage.setItem('liberty_user', JSON.stringify(data.user));
